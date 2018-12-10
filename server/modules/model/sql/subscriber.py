@@ -40,7 +40,7 @@ class Subscription(Base):
         uselist=False,
         back_populates='subscriptions'
     )
-    answers = relationship(
-        'Answers',
+    reports = relationship(
+        'Report',
         back_populates='subscription'
     )

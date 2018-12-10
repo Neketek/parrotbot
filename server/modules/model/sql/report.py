@@ -14,9 +14,9 @@ class Report(Base):
         ForeignKey('subscription.id'),
         nullable=False
     )
-    subsciption = relationship(
+    subscription = relationship(
         "Subscription",
-        back_populates='answers',
+        back_populates='reports',
         uselist=False
     )
     answers = relationship(
