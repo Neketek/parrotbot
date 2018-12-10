@@ -1,3 +1,6 @@
+from pprint import PrettyPrinter
+
+
 class Context:
 
     def __init__(self, client, message, next=None):
@@ -97,7 +100,9 @@ class __Actions:
         return decorator
 
     def feed(self, client, messages):
+        printer = PrettyPrinter(indent=4)
         for m in messages:
+            printer.pprint(m)
             if not self.__continue_interactive(client, m):
                 self.__continue_non_interactive(client, m)
 
