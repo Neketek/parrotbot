@@ -15,14 +15,14 @@ class Context:
         self.files = message.get('files', [])
         self.file = self.files[0] if len(self.files) > 0 else None
 
-    def load_file(self, slack_file=None):
+    def load_file_request(self, slack_file=None):
         slack_file = self.file if slack_file is None else slack_file
         return requests.get(
             slack_file['url_private_download'],
             headers=dict(
                 Authorization='Bearer {0}'.format(self.client.token)
             )
-        ).content
+        )
 
     def reply(self, text):
         self.client.api_call(
@@ -70,6 +70,18 @@ class Context:
 
     def interactive(self, next_data=None):
         return next_data
+
+
+def update_func_name(func):
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    module = func.__module__.split('.')
+    name = func.__name__
+    if name == module[-1]:
+        wrapper.__name__ = func.__module__
+    else:
+        wrapper.__name__ = '.'.join(module+[name])
+    return wrapper
 
 
 class __Actions:
@@ -124,6 +136,7 @@ class __Actions:
                 break
 
     def __register(self, condition, func):
+        func = update_func_name(func)
         if condition is Conditions.default():
             self.listeners.append(
                 dict(
@@ -154,7 +167,7 @@ class __Actions:
     def feed(self, client, messages):
         p = PrettyPrinter(indent=4)
         for m in messages:
-            p.pprint(m)
+            # p.pprint(m)
             if not self.__continue_interactive(client, m):
                 self.__continue_non_interactive(client, m)
 

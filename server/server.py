@@ -1,8 +1,8 @@
 import time
 from slackclient import SlackClient
 from modules.config.env import get_bot_token
-from modules.controller.core import actions
 from modules.model import sql
+from modules.controller.core import actions
 
 
 client = SlackClient(get_bot_token())
