@@ -75,7 +75,6 @@ def download_template(c):
     try:
         if c.file is None:
             raise ValueError(NO_FILE_ERROR)
-            return
         c.reply('Loading the template file...')
         data = json.loads(c.load_file_request().content)
         TemplateSchema().load(data)

@@ -46,6 +46,16 @@ def get_non_existing_subs(session, subs):
 def __unsafe_save(c, data):
     subs = data['subscribers']
     session = sql.Session()
+    try:
+        session\
+            .query(sql.Questionnaire)\
+            .filter(sql.Questionnaire.title == data['title'])\
+            .one()
+        raise ValueError(
+            "Questionnaire {} already exists.".format(data['title'])
+        )
+    except orme.NoResultFound:
+        pass
     if get_non_existing_subs(session, subs):
         update_subscribers(c, session)
         session.commit()
