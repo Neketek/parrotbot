@@ -21,6 +21,12 @@ SUCCESS = """
 Questionnaire {0} was succesfuly created.
 """
 
+SEARCHING_FOR_SUBSCRIBERS = """
+Need to update subscribers cache for:
+{0}
+Wait a bit...
+"""
+
 
 def create_schedule(data):
     return sql.Schedule(
@@ -56,7 +62,13 @@ def __unsafe_save(c, data):
         )
     except orme.NoResultFound:
         pass
-    if get_non_existing_subs(session, subs):
+    non_existing_subs = get_non_existing_subs(session, subs)
+    if non_existing_subs:
+        c.reply(
+            SEARCHING_FOR_SUBSCRIBERS.format(
+                "\n\t".join(non_existing_subs)
+            )
+        )
         update_subscribers(c, session)
         session.commit()
         non_existing_subs = get_non_existing_subs(session, subs)
@@ -91,6 +103,7 @@ def __unsafe_save(c, data):
 
 
 def save(c, data):
+    c.reply('Creation confirmed. Writing to db...')
     try:
         __unsafe_save(c, data)
         c.reply(SUCCESS.format(data['title']))
