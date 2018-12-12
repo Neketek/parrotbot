@@ -1,5 +1,5 @@
 from modules.model import sql
-from sqlalchemy import ext as sqle
+from sqlalchemy.orm import exc as orme
 from .update_subscribers import update_subscribers
 from datetime import datetime
 import json
@@ -36,15 +36,15 @@ def get_non_existing_subs(session, subs):
         try:
             session\
                 .query(sql.Subscriber)\
-                .filter(sql.Subscriber.id == s['id'])\
+                .filter(sql.Subscriber.name == s)\
                 .one()
-        except sqle.NoResultFound:
+        except orme.NoResultFound:
             non_existing_subs.append(s)
     return non_existing_subs
 
 
 def __unsafe_save(c, data):
-    subs = set(data['subscribers'])
+    subs = data['subscribers']
     session = sql.Session()
     if get_non_existing_subs(session, subs):
         update_subscribers(c, session)
@@ -59,13 +59,20 @@ def __unsafe_save(c, data):
                         )
                     )
             )
-    questions = set(data['questions'])
-    schedule = set(data['schedule'])
+    questions = data['questions']
+    schedule = data['schedule']
+    subs = session\
+        .query(sql.Subscriber)\
+        .filter(sql.Subscriber.name.in_(subs))
     session.add(
         sql.Questionnaire(
             title=data['title'],
             questions=[sql.Question(text=q) for q in questions],
-            subscribers=[sql.Subscriber(**s) for s in subs],
+            subscriptions=[
+                sql.Subscription(
+                    subscriber_id=s.id
+                ) for s in subs
+            ],
             schedule=[create_schedule(s) for s in schedule]
         )
     )
@@ -77,5 +84,5 @@ def save(c, data):
     try:
         __unsafe_save(c, data)
         c.reply(SUCCESS.format(data['title']))
-    except Exception as e:
+    except ValueError as e:
         c.reply(ERROR.format(e))

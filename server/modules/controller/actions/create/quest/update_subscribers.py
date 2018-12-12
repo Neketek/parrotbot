@@ -19,10 +19,10 @@ Reason:
 
 
 def get_users_list(c):
-    result = c.api_call('users.list')
+    result = c.client.api_call('users.list')
     error = result.get('error')
     if error is not None:
-        raise Exception(
+        raise ValueError(
             GET_USERS_LIST_ERROR.format(json.dumps(error, indent=4))
         )
     try:
@@ -30,27 +30,27 @@ def get_users_list(c):
         return [
             dict(id=u['id'], name=u['name'])
             for u in users
-            if not u['is_bot'] or u['name'] != 'USLACKBOT'
+            if not u['is_bot'] and u['name'] != 'USLACKBOT'
         ]
     except KeyError:
-        raise Exception(WRONG_SLACK_USER_DATA)
+        raise ValueError(WRONG_SLACK_USER_DATA)
 
 
 def get_users_with_channels_data(c):
     users = get_users_list(c)
     for u in users:
-        result = c.api_call(
+        result = c.client.api_call(
             'im.open',
             user=u['id']
         )
         error = result.get('error')
         if error is not None:
-            raise Exception(
+            raise ValueError(
                 UNABLE_TO_OPEN_CHANNEL
-                .fromat(
+                .format(
                     id=u['id'],
                     name=u['name'],
-                    reason=json.dumps(error, indend=4)
+                    reason=json.dumps(error, indent=4)
                 )
             )
         u['channel_id'] = result['channel']['id']
@@ -76,7 +76,7 @@ def update_subscribers(c, session):
     # new subs
     session.bulk_save_objects(
         [
-            sql.Subscribers(**u)
+            sql.Subscriber(**u)
             for u in users
             if u['id'] not in updated_subs_ids
         ]

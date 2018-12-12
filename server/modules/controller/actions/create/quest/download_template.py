@@ -59,7 +59,13 @@ def data_to_str(data):
         questions=list_to_str(data['questions']),
         subscribers=list_to_str(data['subscribers']),
         schedule=list_to_str(
-            data['schedule'],
+            [
+                (
+                    '{}-{}'.format(s['start'], s['end']),
+                    s['time'],
+                )
+                for s in data['schedule']
+            ],
             format=lambda s: ' '.join(s)
         )
     )

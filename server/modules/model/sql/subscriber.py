@@ -5,9 +5,8 @@ from sqlalchemy.orm import relationship
 
 class Subscriber(Base):
     __tablename__ = 'subscriber'
-    id = Column(Integer(), primary_key=True, autoincrement=True)
+    id = Column(String(256), primary_key=True)
     name = Column(String(256), unique=True)
-    slack_id = Column(String(256), unique=True)
     channel_id = Column(String(256), unique=True)
 
     subscriptions = relationship(
@@ -25,7 +24,7 @@ class Subscription(Base):
         nullable=False
     )
     subscriber_id = Column(
-        Integer(),
+        String(256),
         ForeignKey('subscriber.id'),
         nullable=False
     )

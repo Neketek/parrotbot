@@ -19,7 +19,7 @@ class Questionnaire(Base):
     )
     schedule = relationship(
         'Schedule',
-        back_populates='schedule'
+        back_populates='questionnaire'
     )
 
 

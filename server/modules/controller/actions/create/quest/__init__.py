@@ -8,6 +8,10 @@ Starting questionarie creation.
 Waiting for questionarie template file...
 """
 
+REPEAT_CONFIRMATION = """
+yes|no?
+"""
+
 
 @a.register(c.command('create', 'quest'))
 def quest(c):
@@ -17,4 +21,11 @@ def quest(c):
     elif c.next == 'file':
         return download_template(c)
     elif isinstance(c.next, dict):
-        return save(c, c.next)
+        if c.command == 'yes':
+            return save(c, c.next)
+        elif c.command == 'no':
+            c.reply('Creation stopped.')
+            return
+        else:
+            c.reply(REPEAT_CONFIRMATION)
+            return c.interactive(c.next)
