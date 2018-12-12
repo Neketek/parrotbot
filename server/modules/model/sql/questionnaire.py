@@ -1,5 +1,6 @@
 from .db import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.types import Time
 from sqlalchemy.orm import relationship
 
 
@@ -27,6 +28,18 @@ class Schedule(Base):
     id = Column(
         Integer(),
         primary_key=True
+    )
+    start = Column(
+        Integer(),
+        nullable=False
+    )
+    end = Column(
+        Integer(),
+        nullable=False
+    )
+    time = Column(
+        Time(),
+        nullable=False
     )
     questionnaire_id = Column(
         Integer(),

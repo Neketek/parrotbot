@@ -1,5 +1,7 @@
 from modules.controller.core import actions as a, Conditions as c
 from .download_template import download_template
+from .save import save
+
 
 INITITAL_MSG = """
 Starting questionarie creation.
@@ -15,4 +17,4 @@ def quest(c):
     elif c.next == 'file':
         return download_template(c)
     elif isinstance(c.next, dict):
-        c.reply("Stopping creation...")
+        return save(c, c.next)

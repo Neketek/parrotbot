@@ -1,18 +1,16 @@
 {
   "title":"Test",
   "questions":[
-    "",
+    "What was you doing yesterday?",
     "What was you doing yesterday?",
     "What are you going to do today?",
     "What is a chance that something will block your progress on your goals?"
   ],
   "subscribers":[
     "neketek",
-    "",
-    1
+    "neketek"
   ],
   "schedule":[
-    ["everyday",""],
-    [1,"gg"]
+    {"start":1, "end":2, "time":"20:00"}
   ]
 }
