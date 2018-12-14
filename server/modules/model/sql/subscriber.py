@@ -7,7 +7,11 @@ class Subscriber(Base):
     __tablename__ = 'subscriber'
     id = Column(String(256), primary_key=True)
     name = Column(String(256), unique=True)
+    display_name = Column(String(256), nullable=False)
+    admin = Column(Boolean(), default=False)
     channel_id = Column(String(256), unique=True)
+    tz = Column(String(256), nullable=False)
+    active = Column(Boolean(), default=True)
 
     subscriptions = relationship(
         'Subscription',

@@ -28,9 +28,15 @@ def get_users_list(c):
     try:
         users = result['members']
         return [
-            dict(id=u['id'], name=u['name'])
+            dict(
+                id=u['id'],
+                name=u['name'],
+                display_name=u['profile']['display_name'],
+                admin=u['is_admin'] or u['is_owner'],
+                tz=u['tz']
+            )
             for u in users
-            if not u['is_bot'] and u['id'] != 'USLACKBOT'
+            if not u['is_bot'] and u['id'] != 'USLACKBOT' and not u['deleted']
         ]
     except KeyError:
         raise ValueError(WRONG_SLACK_USER_DATA)

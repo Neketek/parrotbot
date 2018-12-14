@@ -167,10 +167,11 @@ class __Actions:
             return func
         return decorator
 
-    def feed(self, client, messages):
+    def feed(self, client, messages, log=False):
         p = PrettyPrinter(indent=4)
         for m in messages:
-            p.pprint(m)
+            if log:
+                p.pprint(m)
             if not self.__continue_interactive(client, m):
                 self.__continue_non_interactive(client, m)
 

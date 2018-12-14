@@ -2,7 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from functools import wraps
-engine = create_engine('sqlite:///db.sqlite', echo=True)
+from modules.config.env import config as envconf
+
+
+engine = create_engine('sqlite:///db.sqlite', echo=envconf.DEBUG)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 

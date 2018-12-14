@@ -1,12 +1,10 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
-from modules.controller.actions.update.subscribers import update_subscribers
 from datetime import datetime
 import json
 
 
 UNABLE_TO_FIND_USERS = """
-Creation stopped.
 Unable to find user(s):
 {0}
 """
@@ -19,12 +17,6 @@ Error:
 
 SUCCESS = """
 Questionnaire {0} was succesfuly created.
-"""
-
-SEARCHING_FOR_SUBSCRIBERS = """
-Need to update subscribers cache for:
-{0}
-Wait a bit...
 """
 
 
@@ -64,16 +56,7 @@ def __unsafe_save(c, data):
         pass
     non_existing_subs = get_non_existing_subs(session, subs)
     if non_existing_subs:
-        c.reply(
-            SEARCHING_FOR_SUBSCRIBERS.format(
-                "\n\t".join(non_existing_subs)
-            )
-        )
-        update_subscribers(c, session)
-        session.commit()
-        non_existing_subs = get_non_existing_subs(session, subs)
-        if non_existing_subs:
-            raise Exception(
+            raise ValueError(
                 UNABLE_TO_FIND_USERS.format(
                         json.dumps(
                             non_existing_subs,
