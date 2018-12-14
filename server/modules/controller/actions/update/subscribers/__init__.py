@@ -21,7 +21,7 @@ Updating subscribers cache...
 
 @a.register(c.command('update', 'subscribers'))
 @sql.session()
-def update(c, session=None):
+def subscribers(c, session=None):
     try:
         c.reply(INITIAL)
         update_subscribers(c, session)
