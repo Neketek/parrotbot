@@ -30,7 +30,7 @@ def get_users_list(c):
         return [
             dict(id=u['id'], name=u['name'])
             for u in users
-            if not u['is_bot'] and u['name'] != 'USLACKBOT'
+            if not u['is_bot'] and u['id'] != 'USLACKBOT'
         ]
     except KeyError:
         raise ValueError(WRONG_SLACK_USER_DATA)
@@ -71,7 +71,7 @@ def update_subscribers(c, session):
                 session.add(s)
                 break
         else:
-            if len(s.reports) == 0:
+            if len(s.subscriptions) == 0:
                 session.delete(s)
     # new subs
     session.bulk_save_objects(

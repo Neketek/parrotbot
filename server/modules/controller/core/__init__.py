@@ -25,9 +25,12 @@ class Context:
         )
 
     def reply(self, text):
-        self.client.api_call(
+        return self.send(self.channel, text)
+
+    def send(self, channel, text):
+        return self.client.api_call(
             'chat.postMessage',
-            channel=self.channel,
+            channel=channel,
             text=text
         )
 
@@ -167,7 +170,7 @@ class __Actions:
     def feed(self, client, messages):
         p = PrettyPrinter(indent=4)
         for m in messages:
-            # p.pprint(m)
+            p.pprint(m)
             if not self.__continue_interactive(client, m):
                 self.__continue_non_interactive(client, m)
 

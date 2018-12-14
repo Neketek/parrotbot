@@ -1,12 +1,13 @@
 {
-  "title":"Testing",
+  "title":"T",
   "questions":[
     "What was you doing yesterday?",
     "What are you going to do today?",
-    "What is a chance that something will block your progress on your goals?"
+    "What is a chance that everything will not go as planned?"
   ],
   "subscribers":[
-    "neketek"
+    "neketek",
+    "lizmeliz"
   ],
   "schedule":[
     {"start":1, "end":2, "time":"20:00"}

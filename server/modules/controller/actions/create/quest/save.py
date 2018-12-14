@@ -1,6 +1,6 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
-from .update_subscribers import update_subscribers
+from modules.controller.actions.update.subscribers import update_subscribers
 from datetime import datetime
 import json
 

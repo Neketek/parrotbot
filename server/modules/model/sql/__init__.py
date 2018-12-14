@@ -1,5 +1,5 @@
 from .report import Report, Answer
 from .questionnaire import Questionnaire, Question, Schedule
 from .subscriber import Subscriber, Subscription
-from .db import Base, engine, Session
+from .db import Base, engine, Session, session
 Base.metadata.create_all(engine)
