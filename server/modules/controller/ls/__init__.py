@@ -12,7 +12,7 @@ Can't find questionnaire "{0}".
 """
 
 
-@a.register(c.command('ls', 'question'))
+@a.register(c.command('ls', 'qt'))
 @sql.session()
 def ls_questions(c, session=None):
     try:
@@ -37,22 +37,18 @@ def ls_questions(c, session=None):
     c.reply(result)
 
 
-@a.register(c.command('ls', 'quest'))
+@a.register(c.command('ls', 'q'))
 @sql.session()
 def ls_quest(c, session=None):
     quests = session\
         .query(sql.Questionnaire)\
         .order_by(sql.Questionnaire.id.asc())\
         .all()
-    result = "Questionnairies:\n"
-    n = 1
-    for q in quests:
-        result += "\t{0}) {1}\n".format(n, q.title)
-        n += 1
-    c.reply(result)
+    result = "Questionnairies:\n{}"
+    c.reply(result.format(sql.Questionnaire.to_pretty_table(quests)))
 
 
-@a.register(c.command('ls', 'subs'))
+@a.register(c.command('ls', 's'))
 @sql.session()
 def ls_subscribers(c, session=None):
     subs = []
@@ -77,13 +73,3 @@ def ls_subscribers(c, session=None):
         c.reply(NO_QUEST_WITH_TITLE.format(c.cs_command_args[2]))
         return
     c.reply(result.format(sql.Subscriber.to_pretty_table(subs)))
-
-
-@a.register(c.command('help'))
-def help(c):
-    c.reply("Command args:{args}".format(args=c.command_args))
-
-
-@a.register(c.default())
-def default(c):
-    c.reply("I dont understand you. Try asking for 'help' :)")

@@ -1,3 +1,6 @@
+from modules.model.sql import Questionnaire
+
+
 DATA_STR_TEMPLATE = """
 Title: {title}
 Expiration: {expiration}
@@ -8,8 +11,6 @@ Subscribers:
 Schedule:
 {schedule}
 """
-
-EXPIRATION_DEFAULT = "day end"
 
 
 def __list_to_str(l, format=str):
@@ -24,7 +25,7 @@ def __list_to_str(l, format=str):
 def json_to_str(data):
     return DATA_STR_TEMPLATE.format(
         title=data['title'],
-        expiration=data.get('expiration', EXPIRATION_DEFAULT),
+        expiration=data.get('expiration', Questionnaire.NULL_EXPIRATION_STR),
         questions=__list_to_str(data['questions']),
         subscribers=__list_to_str(data['subscribers']),
         schedule=__list_to_str(

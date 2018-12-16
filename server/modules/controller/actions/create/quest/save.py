@@ -7,6 +7,7 @@ import json
 UNABLE_TO_FIND_USERS = """
 Unable to find user(s):
 {0}
+Try to update subscribers.
 """
 
 ERROR = """
@@ -20,11 +21,17 @@ Questionnaire {0} was succesfuly created.
 """
 
 
+def time_from_str(value):
+    if value is None:
+        return None
+    return datetime.strptime(value, "%H:%M").time()
+
+
 def create_schedule(data):
     return sql.Schedule(
         start=data['start'],
         end=data['end'],
-        time=datetime.strptime(data['time'], "%H:%M").time()
+        time=time_from_str(data['time'])
     )
 
 
@@ -73,6 +80,7 @@ def __unsafe_save(c, data):
         sql.Questionnaire(
             title=data['title'],
             questions=[sql.Question(text=q) for q in questions],
+            expiration=time_from_str(data.get('expiration')),
             subscriptions=[
                 sql.Subscription(
                     subscriber_id=s.id
