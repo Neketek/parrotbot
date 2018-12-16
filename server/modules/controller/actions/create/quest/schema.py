@@ -8,10 +8,17 @@ from modules.model.sql import Questionnaire, Question, Subscriber
 from datetime import datetime
 
 
+def time_str_validator(value):
+    try:
+        datetime.strptime(value, "%H:%M")
+    except ValueError:
+        raise ValidationError("Time is not in %H:%M format")
+
+
 class ScheduleSchema(Schema):
     start = f.Integer(validate=v.Range(min=1, max=7))
     end = f.Integer(validate=v.Range(min=1, max=7))
-    time = f.String()
+    time = f.Str(validate=time_str_validator)
 
     @validates_schema
     def __validate_schema(self, data):
@@ -20,10 +27,6 @@ class ScheduleSchema(Schema):
                 "start must be less or equal than end",
                 "start"
             )
-        try:
-            datetime.strptime(data['time'], "%H:%M")
-        except ValueError:
-            raise ValidationError("time is not in HH:mm format", "time")
 
 
 class TemplateSchema(Schema):
@@ -33,6 +36,7 @@ class TemplateSchema(Schema):
             max=Questionnaire.title.property.columns[0].type.length
         )
     )
+    expiration = f.Str(validate=time_str_validator, required=False)
     questions = f.List(
         f.Str(
             validate=v.Length(

@@ -1,6 +1,7 @@
 from .db import Base
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
+from prettytable import PrettyTable
 
 
 class Subscriber(Base):
@@ -17,6 +18,38 @@ class Subscriber(Base):
         'Subscription',
         back_populates='subscriber'
     )
+
+    @property
+    def role(self):
+        return "admin" if self.admin else "member"
+
+    @staticmethod
+    def create_pretty_table():
+        t = PrettyTable()
+        t.field_names = [
+            "name",
+            "display_name",
+            "role",
+            "tz",
+            "active"
+        ]
+        return t
+
+    def to_pretty_table_row(self):
+        return [
+            self.name,
+            self.display_name,
+            self.role,
+            self.tz,
+            self.active
+        ]
+
+    @staticmethod
+    def to_pretty_table(subs):
+        t = Subscriber.create_pretty_table()
+        for s in subs:
+            t.add_row(s.to_pretty_table_row())
+        return t
 
 
 class Subscription(Base):

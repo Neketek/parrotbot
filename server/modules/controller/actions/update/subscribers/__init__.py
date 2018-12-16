@@ -10,7 +10,7 @@ Can't update subscribers.
 
 SUCCESS = """
 Subscribers cache updated.
-Subscribers:
+Subscribers.
 {}
 """
 
@@ -19,20 +19,20 @@ Updating subscribers cache...
 """
 
 
-@a.register(c.command('update', 'subscribers'))
+@a.register(c.command('update', 'subs'))
 @sql.session()
 def subscribers(c, session=None):
     try:
         c.reply(INITIAL)
         update_subscribers(c, session)
+        session.commit()
         subs = session\
             .query(sql.Subscriber)\
             .all()
-        result = ""
-        n = 1
-        for s in subs:
-            result += "\t{0}) {1}\n".format(n, s.name)
-            n += 1
-        c.reply(SUCCESS.format(result))
+        c.reply(
+            SUCCESS.format(
+                sql.Subscriber.to_pretty_table(subs)
+            )
+        )
     except ValueError as e:
         c.reply(ERROR.format(e))

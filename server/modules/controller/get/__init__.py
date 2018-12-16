@@ -8,7 +8,7 @@ Ex. "ls questions <title>".
 """
 
 NO_QUEST_WITH_TITLE = """
-"Can't find questionnaire "{0}".
+Can't find questionnaire "{0}".
 """
 
 
@@ -52,7 +52,7 @@ def ls_quest(c, session=None):
     c.reply(result)
 
 
-@a.register(c.command('ls', 'subscribers'))
+@a.register(c.command('ls', 'subs'))
 @sql.session()
 def ls_subscribers(c, session=None):
     subs = []
@@ -67,20 +67,16 @@ def ls_subscribers(c, session=None):
             for
             s in quest.subscriptions
         ]
-        result = 'Subscribers of "{}":\n'.format(c.cs_command_args[2])
+        result = 'Subscribers of "{}"\n{{}}'.format(c.cs_command_args[2])
     except IndexError:
-        result = 'Subscribers:\n'
+        result = 'Subscribers\n{}'
         subs = session\
             .query(sql.Subscriber)\
             .all()
     except orme.NoResultFound:
         c.reply(NO_QUEST_WITH_TITLE.format(c.cs_command_args[2]))
         return
-    n = 1
-    for sub in subs:
-        result += "\t{0}) {1}\n".format(n, sub.name)
-        n += 1
-    c.reply(result)
+    c.reply(result.format(sql.Subscriber.to_pretty_table(subs)))
 
 
 @a.register(c.command('help'))

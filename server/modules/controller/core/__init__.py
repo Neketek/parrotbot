@@ -24,7 +24,9 @@ class Context:
             )
         )
 
-    def reply(self, text):
+    def reply(self, text, code_block=True):
+        if code_block:
+            text = "```{}```".format(text)
         return self.send(self.channel, text)
 
     def send(self, channel, text):

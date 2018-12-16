@@ -2,17 +2,8 @@ from .schema import TemplateSchema
 from marshmallow import ValidationError
 import json
 from requests import RequestException
+from .json_to_str import json_to_str
 
-
-DATA_STR_TEMPLATE = """
-Title:{title}
-Questions:
-{questions}
-Subscribers:
-{subscribers}
-Schedule:
-{schedule}
-"""
 
 SUCCESSFULL_REPLY_TEMPLATE = """
 Template file was loaded and parsed succesfully.
@@ -23,52 +14,23 @@ yes|no?
 
 NO_FILE_ERROR = """
 Can't find the template file.
-Creation stopped.
 """
 
 JSON_DECODE_ERROR = """
 Can't decode json. File is invalid json.
-Creation stopped.
 """
 
 REQUEST_ERROR = """
 Can't download template file from slack.
-Creation stopped.
-Error:
+Reason:
 {0}
 """
 
 INVALID_SCHEMA_ERROR = """
-Template schema is not valid:
-Creation stopped.
-Errors:
+Template schema is not valid.
+Reason:
 {0}
 """
-
-
-def data_to_str(data):
-    def list_to_str(l, format=str):
-        r = ''
-        n = 1
-        for i in l:
-            r += '\t{0}) {1}\n'.format(n, format(i))
-            n += 1
-        return r
-    return DATA_STR_TEMPLATE.format(
-        title=data['title'],
-        questions=list_to_str(data['questions']),
-        subscribers=list_to_str(data['subscribers']),
-        schedule=list_to_str(
-            [
-                (
-                    '{}-{}'.format(s['start'], s['end']),
-                    s['time'],
-                )
-                for s in data['schedule']
-            ],
-            format=lambda s: ' '.join(s)
-        )
-    )
 
 
 def download_template(c):
@@ -78,15 +40,14 @@ def download_template(c):
         c.reply('Loading the template file...')
         data = json.loads(c.load_file_request().content)
         TemplateSchema().load(data)
-        c.reply(SUCCESSFULL_REPLY_TEMPLATE.format(data_to_str(data)))
+        c.reply(SUCCESSFULL_REPLY_TEMPLATE.format(json_to_str(data)))
         return c.interactive(data)
     except json.JSONDecodeError:
-        c.reply(JSON_DECODE_ERROR)
-        return
+        raise ValueError(JSON_DECODE_ERROR)
     except RequestException as e:
-        c.reply(REQUEST_ERROR.format(e))
+        raise ValueError(REQUEST_ERROR.format(e))
     except ValidationError as e:
-        c.reply(
+        raise ValueError(
             INVALID_SCHEMA_ERROR.format(
                 json.dumps(e.messages, indent=4)
             )
