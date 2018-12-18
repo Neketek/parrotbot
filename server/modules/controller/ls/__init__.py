@@ -12,7 +12,7 @@ Can't find questionnaire "{0}".
 """
 
 
-@a.register(c.command('ls', 'qt'))
+@a.register(c.command('ls', 'questions'))
 @sql.session()
 def ls_questions(c, session=None):
     try:
@@ -37,7 +37,7 @@ def ls_questions(c, session=None):
     c.reply(result)
 
 
-@a.register(c.command('ls', 'q'))
+@a.register(c.command('ls', 'quest'))
 @sql.session()
 def ls_quest(c, session=None):
     quests = session\
@@ -48,7 +48,7 @@ def ls_quest(c, session=None):
     c.reply(result.format(sql.Questionnaire.to_pretty_table(quests)))
 
 
-@a.register(c.command('ls', 's'))
+@a.register(c.command('ls', 'subscribers'))
 @sql.session()
 def ls_subscribers(c, session=None):
     subs = []

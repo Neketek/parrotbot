@@ -1,18 +1,38 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
-from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone
 
 REPORT_MESSAGE = """
-Please provide report on "{title}" questionnaire.
-You have {time} from this moment to answer the question.
-Type "report" to tell me that you're ready to provide questions.
+Pls, provide report on "{title}" questionnaire.
+You have {time} from this moment to answer the questions.
+Type "report" when you're ready.
 """
 
 
-def create_report_request_msg(quest):
+NO_QUEST = """
+Can't find questionarie "{}"
+"""
+
+
+def create_report_request_msg(quest, now, tz):
+    if quest.expiration is None:
+        next = tz.localize(
+            datetime.combine(
+                (now + timedelta(days=1)).date(),
+                datetime.min.time()
+            )
+        )
+        time = next - now
+        h = time.seconds // 3600
+        m = (time.seconds % 3600)//60
+
+    else:
+        h = quest.expiration.hour
+        m = quest.expiration.minute
     return REPORT_MESSAGE.format(
         title=quest.title,
-        time="1h00m"
+        time="{}h {}m".format(h, m)
     )
 
 
@@ -26,17 +46,19 @@ def request_report(c, quest=None, title=None, session=None):
                     .filter(sql.Questionnaire.title == title)\
                     .one()
             except orme.NoResultFound:
-                raise ValueError(
-                    "Can't find questionnaire \"{}\"".format(title)
-                )
+                raise ValueError(NO_QUEST.format(title))
+    now = timezone('UTC').localize(datetime.utcnow())
+    msg = dict()
     for s in quest.subscriptions:
+        tz = timezone(s.subscriber.tz)
+        created = now.astimezone(tz)
         session.add(
             sql.Report(
                 subscription=s,
-                created=datetime.now()
+                created=created
             )
         )
+        msg[s.subscriber.tz] = create_report_request_msg(quest, created, tz)
     session.commit()
-    msg = create_report_request_msg(quest)
     for s in quest.subscriptions:
-        c.send(s.subscriber.channel_id, msg)
+        c.send(s.subscriber.channel_id, msg[s.subscriber.tz])

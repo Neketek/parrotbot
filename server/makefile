@@ -9,5 +9,6 @@ rmdb:
 srun:
 	python server.py
 
+.PHONY: dsrun
 dsrun:
 	DEBUG=true python server.py

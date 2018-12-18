@@ -21,9 +21,11 @@ def report(
         title = c.cs_command_args[2]
     except IndexError:
         c.reply(NO_TITLE)
+        return
     try:
         return request_report(c, title=title)
     except ValueError as e:
         c.reply(
             ERROR.format(e)
         )
+        return

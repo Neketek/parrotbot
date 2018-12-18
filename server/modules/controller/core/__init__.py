@@ -24,16 +24,17 @@ class Context:
             )
         )
 
-    def reply(self, text, code_block=True):
+    def reply(self, text, **kwargs):
+        return self.send(self.channel, text, **kwargs)
+
+    def send(self, channel, text, code_block=True, **kwargs):
         if code_block:
             text = "```{}```".format(text)
-        return self.send(self.channel, text)
-
-    def send(self, channel, text):
         return self.client.api_call(
             'chat.postMessage',
             channel=channel,
-            text=text
+            text=text,
+            **kwargs
         )
 
     @property
