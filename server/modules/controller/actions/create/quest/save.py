@@ -10,12 +10,6 @@ Unable to find user(s):
 Try to update subscribers.
 """
 
-ERROR = """
-Creation Stoped.
-Error:
-{0}
-"""
-
 SUCCESS = """
 Questionnaire {0} was succesfuly created.
 """
@@ -48,9 +42,8 @@ def get_non_existing_subs(session, subs):
     return non_existing_subs
 
 
-def __unsafe_save(c, data):
+def __unsafe_save(c, session, data):
     subs = data['subscribers']
-    session = sql.Session()
     try:
         session\
             .query(sql.Questionnaire)\
@@ -90,13 +83,11 @@ def __unsafe_save(c, data):
         )
     )
     session.commit()
-    session.close()
 
 
-def save(c, data):
-    c.reply('Creation confirmed. Writing to db...')
-    try:
-        __unsafe_save(c, data)
-        c.reply(SUCCESS.format(data['title']))
-    except ValueError as e:
-        c.reply(ERROR.format(e))
+@sql.session()
+def save(c, data, session=None):
+    c.reply("Saving questionnaire to db...")
+    __unsafe_save(c, session, data)
+    c.reply(SUCCESS.format(data['title']))
+    return

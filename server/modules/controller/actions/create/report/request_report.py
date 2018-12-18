@@ -1,6 +1,7 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+from modules.controller.core.time import get_tomorrow, get_now, get_utcnow
 from pytz import timezone
 
 REPORT_MESSAGE = """
@@ -15,21 +16,19 @@ Can't find questionarie "{}"
 """
 
 
-def create_report_request_msg(quest, now, tz):
-    if quest.expiration is None:
-        next = tz.localize(
-            datetime.combine(
-                (now + timedelta(days=1)).date(),
-                datetime.min.time()
-            )
-        )
-        time = next - now
-        h = time.seconds // 3600
-        m = (time.seconds % 3600)//60
-
+def get_expiration(quest, now, tz):
+    t = quest.expiration
+    if t is None:
+        next = get_tomorrow(tz)
+        dt = next - now
     else:
-        h = quest.expiration.hour
-        m = quest.expiration.minute
+        dt = timedelta(hour=t.hour, minute=t.minute)
+    return now + dt, dt
+
+
+def create_report_request_msg(quest, dt):
+    h = dt.seconds // 3600
+    m = dt.seconds % 3600 // 60
     return REPORT_MESSAGE.format(
         title=quest.title,
         time="{}h {}m".format(h, m)
@@ -47,18 +46,20 @@ def request_report(c, quest=None, title=None, session=None):
                     .one()
             except orme.NoResultFound:
                 raise ValueError(NO_QUEST.format(title))
-    now = timezone('UTC').localize(datetime.utcnow())
+    now = get_utcnow()
     msg = dict()
     for s in quest.subscriptions:
         tz = timezone(s.subscriber.tz)
         created = now.astimezone(tz)
+        expiration, dt = get_expiration(quest, created, tz)
         session.add(
             sql.Report(
                 subscription=s,
-                created=created
+                created=created,
+                expiration=expiration
             )
         )
-        msg[s.subscriber.tz] = create_report_request_msg(quest, created, tz)
+        msg[s.subscriber.tz] = create_report_request_msg(quest, dt)
     session.commit()
     for s in quest.subscriptions:
         c.send(s.subscriber.channel_id, msg[s.subscriber.tz])

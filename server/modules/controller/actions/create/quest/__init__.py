@@ -12,20 +12,30 @@ REPEAT_CONFIRMATION = """
 yes|no?
 """
 
+ERROR = """
+Creation Stoped.
+Error:
+{0}
+"""
+
 
 @a.register(c.command('create', 'quest'))
 def quest(c):
-    if c.next is None:
-        c.reply(INITITAL_MSG)
-        return c.interactive('file')
-    elif c.next == 'file':
-        return download_template(c)
-    elif isinstance(c.next, dict):
-        if c.command == 'yes':
-            return save(c, c.next)
-        elif c.command == 'no':
-            c.reply('Creation stopped.')
-            return
-        else:
-            c.reply(REPEAT_CONFIRMATION)
-            return c.interactive(c.next)
+    try:
+        if c.next is None:
+            c.reply(INITITAL_MSG)
+            return c.interactive('file')
+        elif c.next == 'file':
+            return download_template(c)
+        elif isinstance(c.next, dict):
+            if c.command == 'yes':
+                save(c, c.next)
+                return
+            elif c.command == 'no':
+                c.reply('Creation stopped.')
+                return
+            else:
+                c.reply(REPEAT_CONFIRMATION)
+                return c.interactive(c.next)
+    except ValueError as e:
+        c.reply(ERROR.format(e))

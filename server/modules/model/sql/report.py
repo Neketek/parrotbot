@@ -8,6 +8,7 @@ class Report(Base):
     __tablename__ = 'report'
     id = Column(Integer(), primary_key=True, autoincrement=True)
     created = Column(DateTime(), nullable=False)
+    expiration = Column(DateTime(), nullable=False)
     completed = Column(DateTime(), nullable=True)
     subscription_id = Column(
         Integer(),
