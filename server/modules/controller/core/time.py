@@ -19,5 +19,9 @@ def get_today(tz):
         )
 
 
+def get_shifted_date(tz, days):
+    return get_today(tz)+timedelta(days=days)
+
+
 def get_tomorrow(tz):
-    return get_today(tz)+timedelta(days=1)
+    return get_shifted_date(tz, 1)

@@ -23,7 +23,7 @@ Updating subscribers cache...
 @sql.session()
 def subscribers(c, session=None):
     try:
-        c.reply(INITIAL)
+        c.reply(INITIAL, code_block=True)
         update_subscribers(c, session)
         session.commit()
         subs = session\
@@ -32,7 +32,8 @@ def subscribers(c, session=None):
         c.reply(
             SUCCESS.format(
                 sql.Subscriber.to_pretty_table(subs)
-            )
+            ),
+            code_block=True
         )
     except ValueError as e:
         c.reply(ERROR.format(e))

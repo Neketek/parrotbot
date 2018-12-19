@@ -15,10 +15,6 @@ You are not a subscriber!
 There is no record about you.
 '''
 
-SUCCESS = """
-There are {} pending reports.
-"""
-
 
 def get_pending_reports(user_id, session):
     try:
@@ -52,12 +48,32 @@ def get_pending_reports(user_id, session):
     return dict(ids=[r.id for r in reports], tz=tz)
 
 
+STOP_COMMAND = ".stop"
+
+REPORTING_STOPPED = """
+Report stopped. You can start it again using `report` command.
+"""
+
 NEXT_REPORT = """
-Report "{}". Starting...
+Starting report "{}"...
+"""
+
+PENDING_REPORTS_FETCHED = """
+There are {{}} pending reports. To stop reporting type `{}`
+{{{{}}}}
+""".format(STOP_COMMAND)
+
+PENDING_REPORTS_LEFT = """
+There are {} pending reports left.
+{{}}
 """
 
 
-def create_reports_data(c, session=None, reports=None, tz=None):
+def create_report_state_data(c, session=None, reports=None, tz=None):
+    if c.next is None:
+        msg = PENDING_REPORTS_FETCHED.format(len(reports))
+    else:
+        msg = PENDING_REPORTS_LEFT.format(len(reports))
     reports = list(reports)
     id = reports.pop(0)
     quest = (
@@ -78,6 +94,7 @@ def create_reports_data(c, session=None, reports=None, tz=None):
             .all()
         )
     ]
+    c.reply(msg.format(NEXT_REPORT.format(quest.title)))
     return dict(
             id=id,
             title=quest.title,
@@ -89,10 +106,16 @@ def create_reports_data(c, session=None, reports=None, tz=None):
         )
 
 
+REPORT_SAVED = """
+Report successfully saved!
+"""
+
+
 def save(c, session, data):
     id = data['id']
     questions = data['questions']
     answers = data['answers']
+    # print("ANSWERS", answers)
     for i in range(len(data['answers'])):
         session.add(
             sql.Answer(
@@ -108,22 +131,52 @@ def save(c, session, data):
         .update({sql.Report.completed: get_now(data['tz'])})
     )
     session.commit()
-    c.reply('Saved!')
+    c.reply(REPORT_SAVED)
+
+
+ALL_REPORTS_COMPLETED = """
+You completed all pending reports. See you soon.
+"""
+
+
+ANSWER_IS_TOO_LONG = """
+Answer is too long. Try to be laconic.
+Limit is {} chars.
+"""
+
+
+def check_answer_length(answer):
+    max_length = sql.Answer.text.property.columns[0].type.length
+    if len(answer) > max_length:
+        raise ValueError(ANSWER_IS_TOO_LONG.format(max_length))
 
 
 def next_question(c, session, data):
+    if c.command == STOP_COMMAND:
+        c.reply(REPORTING_STOPPED)
+        return
+    if data['next'] >= 0:
+        max_length = sql.Answer.text.property.columns[0].type.length
+        if len(c.text) > max_length:
+            c.reply(ANSWER_IS_TOO_LONG.format(max_length))
+            return data
+        data['answers'].append(c.text)
     if data['next'] + 1 >= len(data['questions']):
         save(c, session, data)
         if data['reports']:
             return next_question(
                 c,
                 session,
-                create_reports_data(c, session, data['reports'], data['tz'])
+                create_report_state_data(
+                    c,
+                    session,
+                    data['reports'],
+                    data['tz']
+                )
             )
         else:
-            c.reply("That's all folks :)")
-    if data['next'] > 0:
-        data['answers'].append(c.text)
+            c.reply(ALL_REPORTS_COMPLETED)
+            return
     data['next'] += 1
     c.reply("{}) {}".format(
         data['next']+1,
@@ -135,15 +188,24 @@ def next_question(c, session, data):
 @a.register(c.command('update', 'report'))
 @sql.session()
 def report(c, session=None):
-    if c.next is None:
-        pending = get_pending_reports(c.user, session)
-        if not pending['ids']:
-            c.reply(NO_REPORTS)
-            return
-        return next_question(
-            c,
-            session,
-            create_reports_data(c, session, pending['ids'], pending['tz'])
-        )
-    else:
-        return next_question(c, session, c.next)
+    try:
+        if c.next is None:
+            pending = get_pending_reports(c.user, session)
+            if not pending['ids']:
+                c.reply(NO_REPORTS)
+                return
+            return next_question(
+                c,
+                session,
+                create_report_state_data(
+                    c,
+                    session,
+                    pending['ids'],
+                    pending['tz']
+                )
+            )
+        else:
+            return next_question(c, session, c.next)
+    except ValueError as e:
+        c.reply(e)
+        return

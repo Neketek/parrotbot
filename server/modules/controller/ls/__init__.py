@@ -1,6 +1,8 @@
 from modules.controller.core import actions as a, Conditions as c
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
+from .reports import ls_reports
+
 
 NO_QUEEST_TITLE = """
 Pls, provide questionnaire title.
@@ -18,7 +20,7 @@ def ls_questions(c, session=None):
     try:
         title = c.cs_command_args[2]
     except IndexError:
-        c.reply(NO_QUEEST_TITLE)
+        c.reply_code(NO_QUEEST_TITLE)
         return
     try:
         quest = session\
@@ -26,7 +28,7 @@ def ls_questions(c, session=None):
             .filter(sql.Questionnaire.title == title)\
             .one()
     except orme.NoResultFound:
-        c.reply(NO_QUEST_WITH_TITLE.format(title))
+        c.reply_code(NO_QUEST_WITH_TITLE.format(title))
         return
     result = "Questionnaire '{0}'.\n Questions:\n"
     n = 1
@@ -34,7 +36,7 @@ def ls_questions(c, session=None):
         result += "\t {0}) {1}\n".format(n, q.text)
         n += 1
     result = result.format(title)
-    c.reply(result)
+    c.reply_code(result)
 
 
 @a.register(c.command('ls', 'quest'))
@@ -45,7 +47,7 @@ def ls_quest(c, session=None):
         .order_by(sql.Questionnaire.id.asc())\
         .all()
     result = "Questionnairies:\n{}"
-    c.reply(result.format(sql.Questionnaire.to_pretty_table(quests)))
+    c.reply_code(result.format(sql.Questionnaire.to_pretty_table(quests)))
 
 
 @a.register(c.command('ls', 'subscribers'))
@@ -70,6 +72,6 @@ def ls_subscribers(c, session=None):
             .query(sql.Subscriber)\
             .all()
     except orme.NoResultFound:
-        c.reply(NO_QUEST_WITH_TITLE.format(c.cs_command_args[2]))
+        c.reply_code(NO_QUEST_WITH_TITLE.format(c.cs_command_args[2]))
         return
-    c.reply(result.format(sql.Subscriber.to_pretty_table(subs)))
+    c.reply_code(result.format(sql.Subscriber.to_pretty_table(subs)))

@@ -24,10 +24,13 @@ class Context:
             )
         )
 
+    def reply_code(self, text, **kwargs):
+        return self.reply(text, code_block=True, **kwargs)
+
     def reply(self, text, **kwargs):
         return self.send(self.channel, text, **kwargs)
 
-    def send(self, channel, text, code_block=True, **kwargs):
+    def send(self, channel, text, code_block=False, **kwargs):
         if code_block:
             text = "```{}```".format(text)
         return self.client.api_call(

@@ -1,13 +1,13 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
-from datetime import datetime, timedelta, time
-from modules.controller.core.time import get_tomorrow, get_now, get_utcnow
+from datetime import timedelta
+from modules.controller.core.time import get_tomorrow, get_utcnow
 from pytz import timezone
 
 REPORT_MESSAGE = """
 Pls, provide report on "{title}" questionnaire.
 You have {time} from this moment to answer the questions.
-Type "report" when you're ready.
+Type `report` when you're ready.
 """
 
 
