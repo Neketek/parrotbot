@@ -47,10 +47,10 @@ def __unsafe_save(c, session, data):
     try:
         session\
             .query(sql.Questionnaire)\
-            .filter(sql.Questionnaire.title == data['title'])\
+            .filter(sql.Questionnaire.name == data['name'])\
             .one()
         raise ValueError(
-            "Questionnaire {} already exists.".format(data['title'])
+            "Questionnaire name: {} already exists.".format(data['name'])
         )
     except orme.NoResultFound:
         pass
