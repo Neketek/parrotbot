@@ -9,6 +9,7 @@ class Questionnaire(Base):
     NULL_EXPIRATION_STR = 'day end'
     __tablename__ = 'questionnaire'
     id = Column(Integer(), primary_key=True, autoincrement=True)
+    name = Column(String(256), unique=True, nullable=False)
     title = Column(String(256), unique=True, nullable=False)
     expiration = Column(Time(), nullable=True)
     active = Column(Boolean(), default=True, nullable=False)
@@ -30,6 +31,7 @@ class Questionnaire(Base):
     def create_pretty_table():
         t = PrettyTable()
         t.field_names = [
+            'name',
             'title',
             'questions',
             'expiration',
@@ -44,6 +46,7 @@ class Questionnaire(Base):
         if exp is None:
             exp = self.NULL_EXPIRATION_STR
         return [
+            self.name,
             self.title,
             len(self.questions),
             exp,

@@ -29,30 +29,25 @@ class ScheduleSchema(Schema):
             )
 
 
-class TemplateSchema(Schema):
-    title = f.Str(
+def StrField(prop):
+    return f.Str(
         validate=v.Length(
             min=1,
-            max=Questionnaire.title.property.columns[0].type.length
+            max=prop.property.columns[0].type.length
         )
     )
+
+
+class TemplateSchema(Schema):
+    name = StrField(Questionnaire.name)
+    title = StrField(Questionnaire.title)
     expiration = f.Str(validate=time_str_validator, required=False)
     questions = f.List(
-        f.Str(
-            validate=v.Length(
-                min=1,
-                max=Question.text.property.columns[0].type.length
-            )
-        ),
+        StrField(Question.text),
         validate=v.Length(min=1)
     )
     subscribers = f.List(
-        f.Str(
-            validate=v.Length(
-                min=1,
-                max=Subscriber.name.property.columns[0].type.length
-            )
-        ),
+        StrField(Subscriber.name),
         validate=v.Length(min=1)
     )
 

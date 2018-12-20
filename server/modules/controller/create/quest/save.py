@@ -71,6 +71,7 @@ def __unsafe_save(c, session, data):
         .filter(sql.Subscriber.name.in_(subs))
     session.add(
         sql.Questionnaire(
+            name=data['name'],
             title=data['title'],
             questions=[sql.Question(text=q) for q in questions],
             expiration=time_from_str(data.get('expiration')),

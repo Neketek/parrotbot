@@ -36,16 +36,16 @@ def create_report_request_msg(quest, dt):
 
 
 @sql.session()
-def request_report(c, quest=None, title=None, session=None):
+def request_report(c, quest=None, name=None, session=None):
     if quest is None:
-        if title is not None:
+        if name is not None:
             try:
                 quest = session\
                     .query(sql.Questionnaire)\
-                    .filter(sql.Questionnaire.title == title)\
+                    .filter(sql.Questionnaire.name == name)\
                     .one()
             except orme.NoResultFound:
-                raise ValueError(NO_QUEST.format(title))
+                raise ValueError(NO_QUEST.format(name))
     now = get_utcnow()
     msg = dict()
     for s in quest.subscriptions:

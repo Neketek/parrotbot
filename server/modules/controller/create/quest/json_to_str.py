@@ -2,6 +2,7 @@ from modules.model.sql import Questionnaire
 
 
 DATA_STR_TEMPLATE = """
+Name: {name}
 Title: {title}
 Expiration: {expiration}
 Questions:
@@ -24,6 +25,7 @@ def __list_to_str(l, format=str):
 
 def json_to_str(data):
     return DATA_STR_TEMPLATE.format(
+        name=data['name'],
         title=data['title'],
         expiration=data.get('expiration', Questionnaire.NULL_EXPIRATION_STR),
         questions=__list_to_str(data['questions']),

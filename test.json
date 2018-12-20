@@ -1,5 +1,6 @@
 {
-  "title":"T",
+  "name":"daily",
+  "title":"Daily report",
   "questions":[
     "What was you doing yesterday?",
     "What are you going to do today?",

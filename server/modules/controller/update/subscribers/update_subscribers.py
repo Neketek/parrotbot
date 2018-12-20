@@ -72,7 +72,10 @@ def update_subscribers(c, session):
         for u in users:
             if u['id'] == s.id:
                 s.name = u['name']
+                s.display_name = u['display_name']
+                s.admin = u['admin']
                 s.channel_id = u['channel_id']
+                s.tz = u['tz']
                 updated_subs_ids.append(s.id)
                 session.add(s)
                 break
