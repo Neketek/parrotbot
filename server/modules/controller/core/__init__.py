@@ -1,6 +1,7 @@
 from pprint import PrettyPrinter
 from collections import abc
 import requests
+from datetime import datetime
 
 
 NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
@@ -12,6 +13,8 @@ Context.Interactive(*args, **kwargs)
 """
 
 DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
+
+printer = PrettyPrinter(indent=4)
 
 
 class Context(object):
@@ -147,10 +150,13 @@ class __Actions:
     ):
         if not isinstance(result, Context.Interactive):
             raise Context.Interactive.NonIntentionalInteractive()
-        self.interactive[message['channel']] = (
+        channel = message['channel']
+        self.interactive[channel] = (
             dict(
                 func=func,
-                i=result
+                i=result,
+                started=datetime.now().timestamp(),
+                channel=channel
             )
         )
 
@@ -172,6 +178,7 @@ class __Actions:
             if not isinstance(result, Context.Interactive):
                 raise Context.Interactive.NonIntentionalInteractive()
             target['i'] = result
+            target['started'] = datetime.now().timestamp()
         return True
 
     def __continue_non_interactive(self, client, message):
@@ -182,6 +189,30 @@ class __Actions:
                 if result is not None:
                     self.__start_interactive(message, l['func'], result)
                 break
+
+    def __try_to_kill_interactive(self, client, log=False):
+        now = datetime.now().timestamp()
+        kill = []
+        for data in self.interactive.values():
+            i = data['i']
+            if now - data['started'] >= i.keep_alive:
+                kill.append(dict(i=i, channel=data['channel']))
+        if log and kill:
+            print('KILLING INTERACTIVE SESSIONS...')
+        for t in kill:
+            channel = t['channel']
+            if log:
+                print(channel, 'KIA')
+            del self.interactive[channel]
+            client.api_call(
+                'chat.postMessage',
+                channel=channel,
+                text=t['i'].bye_msg
+            )
+
+        if log and kill:
+            print("STATE:")
+            printer.pprint(self.interactive)
 
     def __register(self, condition, func):
         func = update_func_name(func)
@@ -213,12 +244,10 @@ class __Actions:
         return decorator
 
     def feed(self, client, messages, log=False):
-        p = PrettyPrinter(indent=4)
         for m in messages:
-            if log:
-                p.pprint(m)
             if not self.__continue_interactive(client, m):
                 self.__continue_non_interactive(client, m)
+        self.__try_to_kill_interactive(client, log)
 
     def __str__(self):
         res = "[\n"
