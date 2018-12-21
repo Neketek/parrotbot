@@ -3,17 +3,55 @@ from collections import abc
 import requests
 
 
-class Context:
+NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
+Function should return instance of Context.Interactive to start/continue
+interactive session or None to stop interactive session.
+c.interactive(*args,**kwargs)
+is shortcut to the
+Context.Interactive(*args, **kwargs)
+"""
 
-    def __init__(self, client, message, next=None):
+DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
+
+
+class Context(object):
+
+    class Interactive(object):
+        class NonIntentionalInteractive(Exception):
+            def __str__(self):
+                return NO_INTENTIONAL_INTERACTIVE_EXCEPTION
+
+        def __init__(
+            self,
+            next=None,
+            keep_alive=600,  # seconds
+            bye_msg=DEFAULT_BYE_MSG
+        ):
+            self._next = next
+            self._keep_alive = keep_alive
+            self._bye_msg = bye_msg
+
+        @property
+        def next(self):
+            return self._next
+
+        @property
+        def keep_alive(self):
+            return self._keep_alive
+
+        @property
+        def bye_msg(self):
+            return self._bye_msg
+
+    def __init__(self, client, message, interactive=None):
         self.client = client
         self.message = message
-        self.next = next
         self.text = message.get('text')
         self.user = message.get('user')
         self.channel = message.get('channel')
         self.files = message.get('files', [])
         self.file = self.files[0] if len(self.files) > 0 else None
+        self.i = interactive
 
     def load_file_request(self, slack_file=None):
         slack_file = self.file if slack_file is None else slack_file
@@ -77,8 +115,8 @@ class Context:
             )
             return self.__is_user_message
 
-    def interactive(self, next_data=None):
-        return next_data
+    def interactive(self, *args, **kwargs):
+        return Context.Interactive(*args, **kwargs)
 
 
 def update_func_name(func):
@@ -98,41 +136,42 @@ class __Actions:
     def __init__(
         self
     ):
-        self.listeners = []
-        self.interactive = []  # interactive commands
+        self.listeners = list()
+        self.interactive = dict()  # interactive commands
 
     def __start_interactive(
         self,
-        func,
         message,
-        next
+        func,
+        result
     ):
-        self.interactive.append(
+        if not isinstance(result, Context.Interactive):
+            raise Context.Interactive.NonIntentionalInteractive()
+        self.interactive[message['channel']] = (
             dict(
                 func=func,
-                next=next,
-                channel=message['channel']
+                i=result
             )
         )
 
     def __continue_interactive(self, client, message):
-        user = message.get('user')
-        text = message.get('text')
-        channel = message.get('channel')
-        if user is None or text is None or channel is None:
+        c = Context(client, message)
+        # saving initial value of channel to avoid side effects
+        channel = c.channel
+        if not c.is_user_message:
             return False
-        target = None
-        for i in self.interactive:
-            if i['channel'] == channel:
-                target = i
-                break
+        target = self.interactive.get(channel)
         if target is None:
             return False
-        result = target['func'](Context(client, message, next=target['next']))
+        cmd = target['func']
+        c.i = target['i']
+        result = cmd(c)
         if result is None:
-            self.interactive.remove(target)
+            del self.interactive[channel]
         else:
-            target['next'] = result
+            if not isinstance(result, Context.Interactive):
+                raise Context.Interactive.NonIntentionalInteractive()
+            target['i'] = result
         return True
 
     def __continue_non_interactive(self, client, message):
@@ -141,7 +180,7 @@ class __Actions:
             if l['condition'](context):
                 result = l['func'](context)
                 if result is not None:
-                    self.__start_interactive(l['func'], message, result)
+                    self.__start_interactive(message, l['func'], result)
                 break
 
     def __register(self, condition, func):

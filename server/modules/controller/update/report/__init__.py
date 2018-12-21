@@ -70,7 +70,7 @@ There are {} pending reports left.
 
 
 def create_report_state_data(c, session=None, reports=None, tz=None):
-    if c.next is None:
+    if c.i is None:
         msg = PENDING_REPORTS_FETCHED.format(len(reports))
     else:
         msg = PENDING_REPORTS_LEFT.format(len(reports))
@@ -159,7 +159,7 @@ def next_question(c, session, data):
         max_length = sql.Answer.text.property.columns[0].type.length
         if len(c.text) > max_length:
             c.reply(ANSWER_IS_TOO_LONG.format(max_length))
-            return data
+            return c.interactive(data)
         data['answers'].append(c.text)
     if data['next'] + 1 >= len(data['questions']):
         save(c, session, data)
@@ -182,14 +182,14 @@ def next_question(c, session, data):
         data['next']+1,
         data['questions'][data['next']]['text'])
     )
-    return data
+    return c.interactive(data)
 
 
 @a.register(c.command('update', 'report'))
 @sql.session()
 def report(c, session=None):
     try:
-        if c.next is None:
+        if c.i is None:
             pending = get_pending_reports(c.user, session)
             if not pending['ids']:
                 c.reply(NO_REPORTS)
@@ -205,7 +205,7 @@ def report(c, session=None):
                 )
             )
         else:
-            return next_question(c, session, c.next)
+            return next_question(c, session, c.i.next)
     except ValueError as e:
         c.reply(e)
         return
