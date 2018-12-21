@@ -2,7 +2,7 @@ from pprint import PrettyPrinter
 from collections import abc
 import requests
 from datetime import datetime
-
+import threading
 
 NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
 Function should return instance of Context.Interactive to start/continue
@@ -140,7 +140,13 @@ class __Actions:
         self
     ):
         self.listeners = list()
-        self.interactive = dict()  # interactive commands
+        # interactive commands channels
+        self.interactive = dict()
+        # pending channels which wait for answer
+        self.pending_channels_cmd = dict()
+
+        self.interactive_lock = threading.RLock()
+        self.pending_channel_cmd_lock = threading.RLock()
 
     def __start_interactive(
         self,
@@ -160,34 +166,59 @@ class __Actions:
             )
         )
 
-    def __continue_interactive(self, client, message):
-        c = Context(client, message)
+    def __continue_interactive(self, c):
         # saving initial value of channel to avoid side effects
         channel = c.channel
         if not c.is_user_message:
             return False
-        target = self.interactive.get(channel)
-        if target is None:
-            return False
+        with self.interactive_lock:
+            target = self.interactive.get(channel)
+            if target is None:
+                return False
+            # to prevent deletion while operation is running
+            target['started'] = datetime.now().timestamp()
         cmd = target['func']
         c.i = target['i']
-        result = cmd(c)
+        result = self.__run_cmd(c, cmd)
         if result is None:
             del self.interactive[channel]
         else:
             if not isinstance(result, Context.Interactive):
                 raise Context.Interactive.NonIntentionalInteractive()
-            target['i'] = result
-            target['started'] = datetime.now().timestamp()
+            with self.interactive_lock:
+                # Updating target by link, if it's killed
+                # no exc will be thrown
+                # TODO: need to think about behavior here
+                target['i'] = result
+                target['started'] = datetime.now().timestamp()
         return True
 
-    def __continue_non_interactive(self, client, message):
-        context = Context(client, message)
+    def __run_cmd(self, context, cmd):
+        channel = context.channel
+        with self.pending_channel_cmd_lock:
+            try:
+                cmds = self.pending_channels_cmd[channel]
+            except KeyError:
+                cmds = []
+                self.pending_channels_cmd[channel] = cmds
+            #  if this cmd is already running on specified channel
+        if cmd in cmds:
+            return None
+        cmds.append(cmd)
+        result = cmd(context)
+        with self.pending_channel_cmd_lock:
+            cmds = self.pending_channels_cmd.get(channel)
+            cmds.remove(cmd)
+            if not cmds:
+                del self.pending_channels_cmd[channel]
+            return result
+
+    def __continue_non_interactive(self, c):
         for l in self.listeners:
-            if l['condition'](context):
-                result = l['func'](context)
+            if l['condition'](c):
+                result = self.__run_cmd(c, l['func'])
                 if result is not None:
-                    self.__start_interactive(message, l['func'], result)
+                    self.__start_interactive(c.message, l['func'], result)
                 break
 
     def __try_to_kill_interactive(self, client, log=False):
@@ -199,16 +230,17 @@ class __Actions:
                 kill.append(dict(i=i, channel=data['channel']))
         if log and kill:
             print('KILLING INTERACTIVE SESSIONS...')
-        for t in kill:
-            channel = t['channel']
-            if log:
-                print(channel, 'KIA')
-            del self.interactive[channel]
-            client.api_call(
-                'chat.postMessage',
-                channel=channel,
-                text=t['i'].bye_msg
-            )
+        with self.interactive_lock:
+            for t in kill:
+                channel = t['channel']
+                if log:
+                    print(channel, 'KIA')
+                del self.interactive[channel]
+                client.api_call(
+                    'chat.postMessage',
+                    channel=channel,
+                    text=t['i'].bye_msg
+                )
 
         if log and kill:
             print("STATE:")
@@ -243,10 +275,17 @@ class __Actions:
             return func
         return decorator
 
+    def __process_message(self, context):
+        if not self.__continue_interactive(context):
+            self.__continue_non_interactive(context)
+
     def feed(self, client, messages, log=False):
         for m in messages:
-            if not self.__continue_interactive(client, m):
-                self.__continue_non_interactive(client, m)
+            printer.pprint(m)
+            threading.Thread(
+                target=lambda c: self.__process_message(c),
+                args=(Context(client, m),)
+            ).start()
         self.__try_to_kill_interactive(client, log)
 
     def __str__(self):
