@@ -40,8 +40,15 @@ def download_template(c):
         c.reply('Loading the template file...')
         data = json.loads(c.load_file_request().content)
         TemplateSchema().load(data)
-        c.reply(SUCCESSFULL_REPLY_TEMPLATE.format(json_to_str(data)))
-        return c.interactive(data)
+        msg = (
+            c.reply(
+                SUCCESSFULL_REPLY_TEMPLATE
+                .format(
+                    json_to_str(data)
+                )
+            )
+        ).get('message')
+        return c.result().interactive(data).wait(msg)
     except json.JSONDecodeError:
         raise ValueError(JSON_DECODE_ERROR)
     except RequestException as e:

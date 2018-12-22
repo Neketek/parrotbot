@@ -46,6 +46,24 @@ class Context(object):
         def bye_msg(self):
             return self._bye_msg
 
+    class CommandResult(object):
+
+        def __init__(
+            self,
+            wait_msg=None,
+            interactive=None
+        ):
+            self.wait_msg = wait_msg
+            self.i = interactive
+
+        def wait(self, msg):
+            self.wait_msg = msg
+            return self
+
+        def interactive(self, *args, **kwargs):
+            self.i = Context.Interactive(*args, **kwargs)
+            return self
+
     def __init__(self, client, message, interactive=None):
         self.client = client
         self.message = message
@@ -80,6 +98,10 @@ class Context(object):
             text=text,
             **kwargs
         )
+
+    @staticmethod
+    def result():
+        return Context.CommandResult()
 
     @property
     def command(self):
@@ -118,9 +140,6 @@ class Context(object):
             )
             return self.__is_user_message
 
-    def interactive(self, *args, **kwargs):
-        return Context.Interactive(*args, **kwargs)
-
 
 def update_func_name(func):
     def wrapper(*args, **kwargs):
@@ -140,118 +159,23 @@ class __Actions:
         self
     ):
         self.listeners = list()
-        # interactive commands channels
         self.interactive = dict()
-        # pending channels which wait for answer
-        self.pending_channels_cmd = dict()
+        self.keep_alive_wait_msg = 180  # seconds
+        self.channel_cmd_wait_msg = dict()
+        self.keep_alive_running_cmd = 60  # seconds
+        self.channel_running_cmd = dict()
+        self.threads = []
 
         self.interactive_lock = threading.RLock()
-        self.pending_channel_cmd_lock = threading.RLock()
-
-    def __start_interactive(
-        self,
-        message,
-        func,
-        result
-    ):
-        if not isinstance(result, Context.Interactive):
-            raise Context.Interactive.NonIntentionalInteractive()
-        channel = message['channel']
-        self.interactive[channel] = (
-            dict(
-                func=func,
-                i=result,
-                started=datetime.now().timestamp(),
-                channel=channel
-            )
-        )
-
-    def __continue_interactive(self, c):
-        # saving initial value of channel to avoid side effects
-        channel = c.channel
-        if not c.is_user_message:
-            return False
-        with self.interactive_lock:
-            target = self.interactive.get(channel)
-            if target is None:
-                return False
-            # to prevent deletion while operation is running
-            target['started'] = datetime.now().timestamp()
-        cmd = target['func']
-        c.i = target['i']
-        result = self.__run_cmd(c, cmd)
-        if result is None:
-            del self.interactive[channel]
-        else:
-            if not isinstance(result, Context.Interactive):
-                raise Context.Interactive.NonIntentionalInteractive()
-            with self.interactive_lock:
-                # Updating target by link, if it's killed
-                # no exc will be thrown
-                # TODO: need to think about behavior here
-                target['i'] = result
-                target['started'] = datetime.now().timestamp()
-        return True
-
-    def __run_cmd(self, context, cmd):
-        channel = context.channel
-        with self.pending_channel_cmd_lock:
-            try:
-                cmds = self.pending_channels_cmd[channel]
-            except KeyError:
-                cmds = []
-                self.pending_channels_cmd[channel] = cmds
-            #  if this cmd is already running on specified channel
-        if cmd in cmds:
-            return None
-        cmds.append(cmd)
-        result = cmd(context)
-        with self.pending_channel_cmd_lock:
-            cmds = self.pending_channels_cmd.get(channel)
-            cmds.remove(cmd)
-            if not cmds:
-                del self.pending_channels_cmd[channel]
-            return result
-
-    def __continue_non_interactive(self, c):
-        for l in self.listeners:
-            if l['condition'](c):
-                result = self.__run_cmd(c, l['func'])
-                if result is not None:
-                    self.__start_interactive(c.message, l['func'], result)
-                break
-
-    def __try_to_kill_interactive(self, client, log=False):
-        now = datetime.now().timestamp()
-        kill = []
-        for data in self.interactive.values():
-            i = data['i']
-            if now - data['started'] >= i.keep_alive:
-                kill.append(dict(i=i, channel=data['channel']))
-        if log and kill:
-            print('KILLING INTERACTIVE SESSIONS...')
-        with self.interactive_lock:
-            for t in kill:
-                channel = t['channel']
-                if log:
-                    print(channel, 'KIA')
-                del self.interactive[channel]
-                client.api_call(
-                    'chat.postMessage',
-                    channel=channel,
-                    text=t['i'].bye_msg
-                )
-
-        if log and kill:
-            print("STATE:")
-            printer.pprint(self.interactive)
+        self.channel_cmd_wait_msg_lock = threading.RLock()
+        self.channel_running_cmd_lock = threading.RLock()
 
     def __register(self, condition, func):
         func = update_func_name(func)
         if condition is Conditions.default():
             self.listeners.append(
                 dict(
-                    condition=condition,
+                    cond=condition,
                     func=func
                 )
             )
@@ -264,7 +188,7 @@ class __Actions:
         self.listeners.insert(
             0,
             dict(
-                condition=condition,
+                cond=condition,
                 func=func
             )
         )
@@ -275,25 +199,214 @@ class __Actions:
             return func
         return decorator
 
-    def __process_message(self, context):
-        if not self.__continue_interactive(context):
-            self.__continue_non_interactive(context)
+    def __try_to_add_cmd_wait_msg(self, context, cmd, result):
+        if result is None or result.wait_msg is None:
+            return False
+        with self.channel_cmd_wait_msg_lock:
+            try:
+                cmd_wait_msg = self.channel_cmd_wait_msg[context.channel]
+            except KeyError:
+                cmd_wait_msg = dict()
+                self.channel_cmd_wait_msg[context.channel] = cmd_wait_msg
+
+            cmd_wait_msg[cmd] = dict(
+                msg=result.wait_msg,
+                ts=datetime.now().timestamp()
+            )
+            return True
+
+    @staticmethod
+    def __is_wait_message(wm, m):
+        return (
+            wm.get('bot_id') == m.get('bot_id')
+            and wm.get('ts') == m.get('event_ts')
+        )
+
+    def __try_to_remove_channel_cmd_wait_msg(self, context):
+        with self.channel_cmd_wait_msg_lock:
+            try:
+                cmd_wait_msg = self.channel_cmd_wait_msg[context.channel]
+            except KeyError:
+                return True
+            for cmd in cmd_wait_msg:
+                is_wait_msg = self.__is_wait_message(
+                    cmd_wait_msg[cmd]['msg'],
+                    context.message
+                )
+                if is_wait_msg:
+                    remove = cmd
+                    break
+            else:
+                return False
+            del cmd_wait_msg[remove]
+            return True
+
+    def __is_cmd_waiting(self, context, cmd):
+        with self.channel_cmd_wait_msg_lock:
+            try:
+                cmd_wait_msg = self.channel_cmd_wait_msg[context.channel]
+                if cmd_wait_msg.get(cmd) is not None:
+                    return True
+            except KeyError:
+                self.channel_cmd_wait_msg[context.channel] = {}
+
+    @staticmethod
+    def __create_interactive_entry(
+        m,
+        cmd,
+        res
+    ):
+        if res is None or res.i is None:
+            return None
+        return dict(
+            ts=datetime.now().timestamp(),
+            channel=m['channel'],
+            cmd=cmd,
+            i=res.i
+        )
+
+    def __try_to_start_interactive(
+        self,
+        context,
+        cmd,
+        res
+    ):
+        entry = self.__create_interactive_entry(
+            context.message,
+            cmd,
+            res
+        )
+        if entry is None:
+            return False
+        self.interactive[context.channel] = entry
+        return True
+
+    def __try_to_kill_interactive(self, client):
+        with self.interactive_lock:
+            now = datetime.now().timestamp()
+            remove = []
+            for data in self.interactive.values():
+                if now - data['ts'] > data['i'].keep_alive:
+                    remove.append(data)
+            for data in remove:
+                channel = data['channel']
+                i = data['i']
+                del self.interactive[channel]
+                if i.bye_msg:
+                    client.api_call(
+                        "chat.postMessage",
+                        channel=channel,
+                        text=i.bye_msg
+                    )
+
+    def __try_to_remove_expired_channel_wait_cmd_msg(self):
+        with self.channel_cmd_wait_msg_lock:
+            now = datetime.now().timestamp()
+            for channel in self.channel_cmd_wait_msg:
+                cmd_wait_msg = self.channel_cmd_wait_msg[channel]
+                remove = []
+                for cmd in cmd_wait_msg:
+                    msg = cmd_wait_msg[cmd]
+                    if now - msg['ts'] > self.keep_alive_wait_msg:
+                        remove.append(msg)
+                if remove:
+                    self.channel_cmd_wait_msg[channel] = [
+                        msg
+                        for msg in cmd_wait_msg
+                        if msg not in remove
+                    ]
+
+    def __process_cmd_result(self, context, cmd, res):
+        if res is not None and not isinstance(res, Context.CommandResult):
+            raise ValueError(
+                "Command should return None or Context.CommandResult"
+            )
+        self.__try_to_start_interactive(context, cmd, res)
+        self.__try_to_add_cmd_wait_msg(context, cmd, res)
+
+    def __run_cmd(self, context, cmd):
+        with self.channel_running_cmd_lock:
+            now = datetime.now().timestamp()
+            try:
+                running = self.channel_running_cmd[context.channel]
+            except KeyError:
+                running = dict()
+                self.channel_running_cmd[context.channel] = running
+            if cmd in running.keys():
+                return
+            running[cmd] = now
+        res = cmd(context)
+        with self.channel_running_cmd_lock:
+            del running[cmd]
+        self.__process_cmd_result(context, cmd, res)
+
+    def __try_to_clear_expired_channel_running_cmd(self):
+        with self.channel_running_cmd_lock:
+            now = datetime.now().timestamp()
+            for channel in self.channel_running_cmd:
+                running = self.channel_running_cmd[channel]
+                remove = []
+                for key in running:
+                    if now - running[key] > self.keep_alive_running_cmd:
+                        remove.append(key)
+                for key in remove:
+                    del running[key]
+
+    def __try_to_get_non_interactive(self, context):
+        if not context.is_user_message:
+            return None
+        for l in self.listeners:
+            cond = l['cond']
+            if cond(context):
+                return l['func']
+
+    def __try_to_get_interactive(self, context):
+        if not context.is_user_message:
+            return None
+        with self.interactive_lock:
+            target = self.interactive.get(context.channel)
+            if target is None:
+                return None
+            target['ts'] = datetime.now().timestamp()
+            # updating context object
+            context.i = target.get('i')
+            return target['cmd']
+
+    def __process_message(self, client, msg):
+        context = Context(client, msg)
+        cmd = self.__try_to_get_interactive(context)
+        if cmd is None:
+            cmd = self.__try_to_get_non_interactive(context)
+        if cmd is None:
+            self.__try_to_remove_channel_cmd_wait_msg(context)
+            return
+        if self.__is_cmd_waiting(context, cmd):
+            return
+        self.__run_cmd(context, cmd)
+
+    def __create_msg_thread_worker(self, client, msg):
+        def worker():
+            try:
+                self.__process_message(client, msg)
+            finally:
+                self.threads.remove(threading.current_thread())
+        thread = threading.Thread(target=worker)
+        self.threads.append(thread)
+        thread.start()
 
     def feed(self, client, messages, log=False):
         for m in messages:
-            printer.pprint(m)
-            threading.Thread(
-                target=lambda c: self.__process_message(c),
-                args=(Context(client, m),)
-            ).start()
-        self.__try_to_kill_interactive(client, log)
+            self.__create_msg_thread_worker(client, m)
+        self.__try_to_remove_expired_channel_wait_cmd_msg()
+        self.__try_to_clear_expired_channel_running_cmd()
+        self.__try_to_kill_interactive(client)
 
     def __str__(self):
         res = "[\n"
         for l in self.listeners:
             res += " ({0}, {1})\n".format(
                 l['func'].__name__,
-                l['condition'].__name__
+                l['cond'].__name__
             )
         res += ']'
         return res

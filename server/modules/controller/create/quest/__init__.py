@@ -22,20 +22,23 @@ Error:
 @a.register(c.command('create', 'quest'))
 def quest(c):
     try:
+        print("QUEST")
+        if c.i is not None:
+            print("c.i.next", c.i.next)
         if c.i is None:
-            c.reply(INITITAL_MSG)
-            return c.interactive('file')
+            msg = c.reply(INITITAL_MSG).get('message')
+            return c.result().interactive('file').wait(msg)
         elif c.i.next == 'file':
             return download_template(c)
         elif isinstance(c.i.next, dict):
             if c.command == 'yes':
-                save(c, c.i.next)
-                return
+                return save(c, c.i.next)
             elif c.command == 'no':
-                c.reply('Creation stopped.')
-                return
+                msg = c.reply('Creation stopped.').get('message')
+                return c.result().wait(msg)
             else:
-                c.reply(REPEAT_CONFIRMATION)
-                return c.interactive(c.i.next)
+                msg = c.reply(REPEAT_CONFIRMATION).get('message')
+                return c.result().interactive(c.i.next).wait(msg)
     except ValueError as e:
-        c.reply(ERROR.format(e))
+        msg = c.reply(ERROR.format(e)).get('message')
+        return c.result().wait(msg)
