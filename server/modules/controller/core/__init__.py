@@ -367,8 +367,7 @@ class __Actions:
             target = self.interactive.get(context.channel)
             if target is None:
                 return None
-            target['ts'] = datetime.now().timestamp()
-            # updating context object
+            del self.interactive[context.channel]
             context.i = target.get('i')
             return target['cmd']
 

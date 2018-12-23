@@ -22,9 +22,6 @@ Error:
 @a.register(c.command('create', 'quest'))
 def quest(c):
     try:
-        print("QUEST")
-        if c.i is not None:
-            print("c.i.next", c.i.next)
         if c.i is None:
             msg = c.reply(INITITAL_MSG).get('message')
             return c.result().interactive('file').wait(msg)

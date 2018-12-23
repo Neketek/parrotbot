@@ -94,16 +94,17 @@ def create_report_state_data(c, session=None, reports=None, tz=None):
             .all()
         )
     ]
-    c.reply(msg.format(NEXT_REPORT.format(quest.title)))
-    return dict(
-            id=id,
-            title=quest.title,
-            next=-1,
-            questions=questions,
-            answers=[],
-            tz=tz,
-            reports=reports
-        )
+    msg = c.reply(msg.format(NEXT_REPORT.format(quest.title))).get('message')
+    data = dict(
+        id=id,
+        title=quest.title,
+        next=-1,
+        questions=questions,
+        answers=[],
+        tz=tz,
+        reports=reports
+    )
+    return data
 
 
 REPORT_SAVED = """
@@ -115,7 +116,6 @@ def save(c, session, data):
     id = data['id']
     questions = data['questions']
     answers = data['answers']
-    # print("ANSWERS", answers)
     for i in range(len(data['answers'])):
         session.add(
             sql.Answer(
@@ -153,13 +153,13 @@ def check_answer_length(answer):
 
 def next_question(c, session, data):
     if c.command == STOP_COMMAND:
-        c.reply(REPORTING_STOPPED)
-        return
+        msg = c.reply(REPORTING_STOPPED).get('message')
+        return c.result().wait(msg)
     if data['next'] >= 0:
         max_length = sql.Answer.text.property.columns[0].type.length
         if len(c.text) > max_length:
-            c.reply(ANSWER_IS_TOO_LONG.format(max_length))
-            return c.interactive(data)
+            msg = c.reply(ANSWER_IS_TOO_LONG.format(max_length)).get('message')
+            return c.result().wait(msg).interactive(data)
         data['answers'].append(c.text)
     if data['next'] + 1 >= len(data['questions']):
         save(c, session, data)
@@ -175,14 +175,14 @@ def next_question(c, session, data):
                 )
             )
         else:
-            c.reply(ALL_REPORTS_COMPLETED)
-            return
+            msg = c.reply(ALL_REPORTS_COMPLETED).get('message')
+            return c.result().wait(msg)
     data['next'] += 1
-    c.reply("{}) {}".format(
+    msg = c.reply("{}) {}".format(
         data['next']+1,
         data['questions'][data['next']]['text'])
-    )
-    return c.interactive(data)
+    ).get('message')
+    return c.result().wait(msg).interactive(data)
 
 
 @a.register(c.command('update', 'report'))
@@ -192,8 +192,8 @@ def report(c, session=None):
         if c.i is None:
             pending = get_pending_reports(c.user, session)
             if not pending['ids']:
-                c.reply(NO_REPORTS)
-                return
+                msg = c.reply(NO_REPORTS).get('message')
+                return c.result().wait(msg)
             return next_question(
                 c,
                 session,
@@ -207,5 +207,5 @@ def report(c, session=None):
         else:
             return next_question(c, session, c.i.next)
     except ValueError as e:
-        c.reply(e)
-        return
+        msg = c.reply(e).get('message')
+        return c.result().wait(msg)
