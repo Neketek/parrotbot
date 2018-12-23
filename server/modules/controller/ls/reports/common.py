@@ -173,8 +173,9 @@ CHUNK_SIZE = 20
 
 def reply_msg_attachments(c, session, quest, query):
     page = 1
+    last_msg = None
     for ch in chunk_generator(query, CHUNK_SIZE):
-        c.reply(
+        last_msg = c.reply(
             "*`Page:{}`*".format(page),
             attachments=reports_to_msg_attachments(
                 session,
@@ -183,3 +184,5 @@ def reply_msg_attachments(c, session, quest, query):
             )
         )
         page += 1
+    if last_msg is not None:
+        return c.result().wait(last_msg.get('message'))

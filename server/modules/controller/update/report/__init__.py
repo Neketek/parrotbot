@@ -94,7 +94,7 @@ def create_report_state_data(c, session=None, reports=None, tz=None):
             .all()
         )
     ]
-    msg = c.reply(msg.format(NEXT_REPORT.format(quest.title))).get('message')
+    c.reply(msg.format(NEXT_REPORT.format(quest.title)))
     data = dict(
         id=id,
         title=quest.title,

@@ -1,6 +1,5 @@
 from modules.controller.core import actions as a, Conditions as c
 from modules.model import sql
-from sqlalchemy.orm import exc as orme
 from sqlalchemy import and_
 from modules.controller.core.time import get_shifted_date
 from pytz import timezone
@@ -91,7 +90,7 @@ def quest(c, session=None):
         )
         .all()
     )
-    reply_msg_attachments(
+    return reply_msg_attachments(
         c,
         session,
         None,

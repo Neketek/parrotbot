@@ -1,3 +1,5 @@
+from gevent import monkey
+monkey.patch_all()
 import time
 from slackclient import SlackClient
 from modules.config.env import config as envconf

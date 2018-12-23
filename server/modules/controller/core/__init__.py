@@ -3,6 +3,8 @@ from collections import abc
 import requests
 from datetime import datetime
 import threading
+import logging
+
 
 NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
 Function should return instance of Context.Interactive to start/continue
@@ -15,6 +17,9 @@ Context.Interactive(*args, **kwargs)
 DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
 
 printer = PrettyPrinter(indent=4)
+
+logger = logging.getLogger("CORE")
+logger.setLevel(logging.DEBUG)
 
 
 class Context(object):
@@ -213,6 +218,12 @@ class __Actions:
                 msg=result.wait_msg,
                 ts=datetime.now().timestamp()
             )
+            logger.debug(
+                "C:{} CMD:{} WAIT_MSG".format(
+                    context.channel,
+                    cmd.__name__
+                )
+            )
             return True
 
     @staticmethod
@@ -239,6 +250,12 @@ class __Actions:
             else:
                 return False
             del cmd_wait_msg[remove]
+            logger.debug(
+                "C:{} CMD:{} RECEIVED_WAIT_MSG".format(
+                    context.channel,
+                    cmd.__name__
+                )
+            )
             return True
 
     def __is_cmd_waiting(self, context, cmd):
@@ -246,6 +263,13 @@ class __Actions:
             try:
                 cmd_wait_msg = self.channel_cmd_wait_msg[context.channel]
                 if cmd_wait_msg.get(cmd) is not None:
+                    logger.debug(
+                        "C:{} CMD:{} SKIP_MSG:{}".format(
+                            context.channel,
+                            cmd.__name__,
+                            context.text
+                        )
+                    )
                     return True
             except KeyError:
                 self.channel_cmd_wait_msg[context.channel] = {}
@@ -278,6 +302,10 @@ class __Actions:
         )
         if entry is None:
             return False
+        logger.debug(
+            'C:{} CMD:{} INTERACTIVE_START'
+            .format(context.channel, cmd.__name__)
+        )
         self.interactive[context.channel] = entry
         return True
 
@@ -321,7 +349,20 @@ class __Actions:
             raise ValueError(
                 "Command should return None or Context.CommandResult"
             )
-        self.__try_to_start_interactive(context, cmd, res)
+        if not self.__try_to_start_interactive(context, cmd, res):
+            # means that cmd was interactive but now it's interrupted
+            if context.i is not None:
+                try:
+                    # stopping interactive session
+                    del self.interactive[context.channel]
+                except KeyError:
+                    pass
+                logger.debug(
+                    "C:{} CMD:{} INTERACTIVE_STOP".format(
+                        context.channel,
+                        cmd.__name__
+                    )
+                )
         self.__try_to_add_cmd_wait_msg(context, cmd, res)
 
     def __run_cmd(self, context, cmd):
@@ -367,12 +408,18 @@ class __Actions:
             target = self.interactive.get(context.channel)
             if target is None:
                 return None
-            del self.interactive[context.channel]
+            logger.debug('C:{} INTERACTIVE_CONTINUE'.format(context.channel))
+            # this was the "best" fking fix in the world, I just leave it here
+            # del self.interactive[context.channel]
             context.i = target.get('i')
             return target['cmd']
 
     def __process_message(self, client, msg):
         context = Context(client, msg)
+        if context.is_user_message:
+            logger.debug(
+                "C:{} USER_MSG:{}".format(context.channel, context.text)
+            )
         cmd = self.__try_to_get_interactive(context)
         if cmd is None:
             cmd = self.__try_to_get_non_interactive(context)
