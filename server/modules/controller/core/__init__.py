@@ -5,15 +5,8 @@ from datetime import datetime
 import threading
 import logging
 from modules.config.env import config as envconf
+from . import exc
 
-
-NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
-Function should return instance of Context.Interactive to start/continue
-interactive session or None to stop interactive session.
-c.interactive(*args,**kwargs)
-is shortcut to the
-Context.Interactive(*args, **kwargs)
-"""
 
 DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
 
@@ -24,12 +17,7 @@ logger.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
 
 
 class Context(object):
-
     class Interactive(object):
-        class NonIntentionalInteractive(Exception):
-            def __str__(self):
-                return NO_INTENTIONAL_INTERACTIVE_EXCEPTION
-
         def __init__(
             self,
             next=None,
@@ -97,15 +85,25 @@ class Context(object):
     def reply(self, text, **kwargs):
         return self.send(self.channel, text, **kwargs)
 
-    def send(self, channel, text, code_block=False, **kwargs):
+    def send(
+        self,
+        channel,
+        text,
+        code_block=False,
+        **kwargs
+    ):
         if code_block:
             text = "```{}```".format(text)
-        return self.client.api_call(
+        response = self.client.api_call(
             'chat.postMessage',
             channel=channel,
             text=text,
             **kwargs
         )
+        error = response.get('error')
+        if error is None:
+            return response
+        raise exc.SlackAPICallException(error)
 
     @staticmethod
     def result():
@@ -191,9 +189,7 @@ class __Actions:
             return
         for l in self.listeners:
             if l['func'] is func:
-                raise ValueError(
-                    "Function {0} is already registered:".format(func.__name__)
-                )
+                raise exc.DuplicateHandlerFunction(func)
         self.listeners.insert(
             0,
             dict(
@@ -350,9 +346,7 @@ class __Actions:
 
     def __process_cmd_result(self, context, cmd, res):
         if res is not None and not isinstance(res, Context.CommandResult):
-            raise ValueError(
-                "Command should return None or Context.CommandResult"
-            )
+            raise exc.IncorrectHandlerResult()
         if not self.__try_to_start_interactive(context, cmd, res):
             # means that cmd was interactive but now it's interrupted
             if context.i is not None:
