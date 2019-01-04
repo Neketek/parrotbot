@@ -4,6 +4,7 @@ import requests
 from datetime import datetime
 import threading
 import logging
+from modules.config.env import config as envconf
 
 
 NO_INTENTIONAL_INTERACTIVE_EXCEPTION = """
@@ -18,8 +19,8 @@ DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
 
 printer = PrettyPrinter(indent=4)
 
-logger = logging.getLogger("CORE")
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__.split('.')[-1].upper())
+logger.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
 
 
 class Context(object):
@@ -71,6 +72,8 @@ class Context(object):
 
     def __init__(self, client, message, interactive=None):
         self.client = client
+        self.client_msg_id = message.get('client_msg_id')
+        self.msg_subtype = message.get('subtype')
         self.message = message
         self.text = message.get('text')
         self.user = message.get('user')
@@ -171,6 +174,9 @@ class __Actions:
         self.channel_running_cmd = dict()
         self.threads = []
 
+        self.__user_msg_edit_handler = None
+        self.__user_msg_default_handler = None
+
         self.interactive_lock = threading.RLock()
         self.channel_cmd_wait_msg_lock = threading.RLock()
         self.channel_running_cmd_lock = threading.RLock()
@@ -178,12 +184,10 @@ class __Actions:
     def __register(self, condition, func):
         func = update_func_name(func)
         if condition is Conditions.default():
-            self.listeners.append(
-                dict(
-                    cond=condition,
-                    func=func
-                )
-            )
+            self.__user_msg_default_handler = func
+            return
+        elif condition is Conditions.user_msg_edit():
+            self.__user_msg_edit_handler = func
             return
         for l in self.listeners:
             if l['func'] is func:
@@ -393,29 +397,32 @@ class __Actions:
                 for key in remove:
                     del running[key]
 
-    def __try_to_get_non_interactive(self, context):
-        if not context.is_user_message:
+    def __try_to_get_non_interactive(self, c):
+        if not c.is_user_message:
             return None
         for l in self.listeners:
             cond = l['cond']
-            if cond(context):
+            if cond(c):
                 return l['func']
+        else:
+            return self.__user_msg_default_handler
 
-    def __try_to_get_interactive(self, context):
-        if not context.is_user_message:
+    def __try_to_get_interactive(self, c):
+        if not c.is_user_message:
             return None
         with self.interactive_lock:
-            target = self.interactive.get(context.channel)
+            target = self.interactive.get(c.channel)
             if target is None:
                 return None
-            logger.debug('C:{} INTERACTIVE_CONTINUE'.format(context.channel))
+            logger.debug('C:{} INTERACTIVE_CONTINUE'.format(c.channel))
             # this was the "best" fking fix in the world, I just leave it here
             # del self.interactive[context.channel]
-            context.i = target.get('i')
+            c.i = target.get('i')
             return target['cmd']
 
     def __process_message(self, client, msg):
         context = Context(client, msg)
+        # logger.debug(printer.pformat(msg))
         if context.is_user_message:
             logger.debug(
                 "C:{} USER_MSG:{}".format(context.channel, context.text)
@@ -423,6 +430,9 @@ class __Actions:
         cmd = self.__try_to_get_interactive(context)
         if cmd is None:
             cmd = self.__try_to_get_non_interactive(context)
+        # if this is edit msg use specific handler
+        if cmd is None and context.msg_subtype == 'message_changed':
+            cmd = self.__user_msg_edit_handler
         if cmd is None:
             self.__try_to_remove_channel_cmd_wait_msg(context)
             return
@@ -461,13 +471,20 @@ class __Actions:
 class Conditions:
     @staticmethod
     def __default_condition(c):
-        return c.is_user_message
+        return True
+
+    def __user_msg_edit(c):
+        return True
+
+    @staticmethod
+    def user_msg_edit():
+        return Conditions.__user_msg_edit
 
     @staticmethod
     def command(text, *args):
         def condition(c):
             command_match = False
-            if not c.is_user_message or len(c.command_args) == 0:
+            if len(c.command_args) == 0:
                 return False
             if isinstance(text, abc.Iterable):
                 command_match = c.command_args[0] in text

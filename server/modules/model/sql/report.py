@@ -28,7 +28,7 @@ class Report(Base):
 
 class Answer(Base):
     __tablename__ = 'answer',
-    id = Column(Integer(), primary_key=True)
+    id = Column(String(64), primary_key=True)
     question_id = Column(Integer(), ForeignKey('question.id'), nullable=False)
     report_id = Column(Integer(), ForeignKey('report.id'), nullable=False)
     text = Column(String(512), nullable=False)
