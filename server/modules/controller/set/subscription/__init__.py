@@ -1,0 +1,150 @@
+from modules.model import sql
+from sqlalchemy.orm import exc as orme
+from modules.controller.core import\
+    parsers as p, actions as a, Conditions as c
+from ..common import labels as lb, checks as ch
+
+
+COMMAND = """
+`set subscr <quest|subs> <quest_name> <param> <value> <sub_name,...>`
+"""
+
+NO_QUEST_NAME = """
+Pls, provide quest_name.{}
+""".format(COMMAND)
+
+NO_SUB_NAMES = """
+Pls, provide sub name(s).{}
+""".format(COMMAND)
+
+NO_QUEST_NAMES = """
+Pls, provide quest name(s).{}
+""".format(COMMAND)
+
+NO_SUB_NAME = """
+Pls, provide sub_name.{}
+""".format(COMMAND)
+
+SUB_NOT_FOUND = """
+Subscriber *{}* not found.
+"""
+
+QUEST_NOT_FOUND = """
+Questionnaire *{}* not found.
+"""
+
+
+def set_subscrs_active(c, session, subscrs, value):
+    value = p.Str.bool(value)
+    for s in subscrs:
+        s.active = value
+        session.add(s)
+    session.commit()
+    c.reply_and_wait("Done.")
+
+
+__PARAM_SETTERS = dict(
+    active=set_subscrs_active
+)
+
+
+def get_params_and_setter(c, name_error_text, targets_error_text):
+    args = c.command_args[3:]
+    cs_args = c.cs_command_args[3:]
+    try:
+        name = cs_args[0]
+    except IndexError:
+        raise ValueError(name_error_text)
+    try:
+        param = args[1]
+        func = __PARAM_SETTERS[param]
+    except IndexError:
+        raise ValueError(lb.no_param(COMMAND))
+    except KeyError:
+        raise ValueError(lb.unknown_param(COMMAND))
+    try:
+        value = args[2]
+    except IndexError:
+        raise ValueError(lb.no_value(COMMAND))
+    targets = cs_args[3:]
+    if len(targets) == 0:
+        raise ValueError(targets_error_text)
+    return name, param, value, targets, func
+
+
+def __get_subs_quest_mode(c, session):
+    name, param, value, subs, setter = get_params_and_setter(
+        c,
+        NO_QUEST_NAME,
+        NO_SUB_NAMES
+    )
+    try:
+        quest = (
+            session
+            .query(sql.Questionnaire)
+            .filter(sql.Questionnaire.name == name)
+            .one()
+        )
+    except orme.NoResultsFound:
+        raise ValueError(QUEST_NOT_FOUND.format(name))
+    subscrs = (
+        session
+        .query(sql.Subscription)
+        .join(sql.Subscriber)
+        .filter(sql.Subscription.questionnaire == quest)
+        .filter(sql.Subscriber.name.in_(subs))
+        .all()
+    )
+    ch.compare_found_expected(
+        subscrs,
+        subs,
+        lambda s: s.subscriber.name,
+        "Subscriber(s):"
+    )
+    return subscrs, setter, value
+
+
+def __get_subs_sub_mode(c, session):
+    name, param, value, quests, setter = get_params_and_setter(
+        c,
+        NO_SUB_NAME,
+        NO_QUEST_NAMES
+    )
+    try:
+        sub = (
+            session
+            .query(sql.Subscriber)
+            .filter(sql.Subscriber.name == name)
+            .one()
+        )
+    except orme.NoResultsFound:
+        raise ValueError(SUB_NOT_FOUND.format(name))
+    subscrs = (
+        session
+        .query(sql.Subscription)
+        .join(sql.Questionnaire)
+        .filter(sql.Subscription.subscriber == sub)
+        .filter(sql.Questionnaire.name.in_(quests))
+        .all()
+    )
+    ch.compare_found_expected(
+        subscrs,
+        quests,
+        lambda s: s.quest.name,
+        "Questionnaire(s):"
+    )
+    return subscrs, setter, value
+
+
+@a.register(c.command('set', 'subscr', 'quest'))
+@a.register(c.command('set', 'subscr', 'sub'))
+@sql.session()
+def subscription(c, session=None):
+    try:
+        if c.command_args[2] == 'quest':
+            subscrs, setter, value = __get_subs_quest_mode(c, session)
+        else:
+            subscrs, setter, value = __get_subs_sub_mode(c, session)
+        return setter(c, session, subscrs, value)
+    except ValueError as e:
+        return c.reply_and_wait(str(e))

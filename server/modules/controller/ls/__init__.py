@@ -72,6 +72,7 @@ def ls_subscribers(c, session=None):
             s.subscriber
             for
             s in quest.subscriptions
+            if s.active and s.subscriber.active
         ]
         result = 'Subscribers of "{}"\n{{}}'.format(c.cs_command_args[2])
     except IndexError:
