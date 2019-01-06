@@ -29,13 +29,11 @@ def subscribers(c, session=None):
         subs = session\
             .query(sql.Subscriber)\
             .all()
-        msg = c.reply(
+        return c.reply_and_wait(
             SUCCESS.format(
                 sql.Subscriber.to_pretty_table(subs)
             ),
             code_block=True
-        ).get('message')
-        return c.result().wait(msg)
+        )
     except ValueError as e:
-        msg = c.reply(ERROR.format(e)).get('message')
-        return c.result().wait(msg)
+        return c.reply_and_wait(ERROR.format(e))

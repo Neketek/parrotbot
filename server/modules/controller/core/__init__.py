@@ -61,6 +61,7 @@ class Context(object):
     def __init__(self, client, message, interactive=None):
         self.client = client
         self.client_msg_id = message.get('client_msg_id')
+        self.msg_type = message.get('type')
         self.msg_subtype = message.get('subtype')
         self.message = message
         self.text = message.get('text')
@@ -78,6 +79,12 @@ class Context(object):
                 Authorization='Bearer {0}'.format(self.client.token)
             )
         )
+
+    def send_and_wait(self, *args, **kwargs):
+        return self.result().wait(self.send(*args, **kwargs).get('message'))
+
+    def reply_and_wait(self, *args, **kwargs):
+        return self.send_and_wait(self.channel, *args, **kwargs)
 
     def reply_code(self, text, **kwargs):
         return self.reply(text, code_block=True, **kwargs)
