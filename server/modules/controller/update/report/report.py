@@ -118,7 +118,6 @@ def save(c, session, data):
     questions = data['questions']
     answers = data['answers']
     for i in range(len(data['answers'])):
-        print(answers[i])
         session.add(
             sql.Answer(
                 id=answers[i]['id'],

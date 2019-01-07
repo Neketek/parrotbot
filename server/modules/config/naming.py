@@ -11,18 +11,18 @@ class cddict(object):
 
 short = cddict(
     name=cddict(
-        questionnaire='q',
-        question='qs',
-        subscriber='s',
-        subscription='ss',
-        report='r'
+        questionnaire='quest',
+        question='questions',
+        subscriber='sub',
+        subscription='subscr',
+        report='report'
     ),
     method=cddict(
         list='ls',
-        create='c',
-        update='u',
-        set='s',
-        delete='d'
+        create='create',
+        update='update',
+        set='set',
+        delete='delete'
     ),
     param=cddict(
         days='days'

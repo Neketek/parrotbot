@@ -3,8 +3,8 @@ from modules.model import sql
 from sqlalchemy import and_
 from modules.controller.core.time import get_shifted_date
 from pytz import timezone
-from ..common import reply_msg_attachments, get_channel_sub
-from ..commont_text import no_days_range, days_range_is_not_int, no_names
+from .common import reply_msg_attachments, get_channel_sub
+from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 
 
@@ -43,21 +43,17 @@ def subscriber(c, session=None):
     args = c.command_args
     cs_args = c.cs_command_args
     if len(args) < 4:
-        c.reply(no_days_range(COMMAND))
-        return
+        return c.reply_and_wait(no_days_range(COMMAND))
     if len(args) < 5:
-        c.reply(NO_SUB_NAMES)
-        return
+        return c.reply_and_wait(NO_SUB_NAMES)
     try:
         days = int(c.command_args[3])
     except ValueError:
-        c.reply(days_range_is_not_int(COMMAND))
-        return
+        return c.reply_and_wait(days_range_is_not_int(COMMAND))
     try:
         sub = get_channel_sub(c, session)
     except ValueError as e:
-        c.reply(e)
-        return
+        return c.reply_and_wait(e)
     names = cs_args[4:]
     subs = (
         session
@@ -68,8 +64,7 @@ def subscriber(c, session=None):
     if len(subs) < len(names):
         found = [s.name for s in subs]
         not_found = [n for n in names if n not in found]
-        c.reply(no_subs_with_name(not_found))
-        return
+        return c.reply_and_wait(no_subs_with_name(not_found))
     sub_ids = [s.id for s in subs]
     tz = timezone(sub.tz)
     date_boundary = get_shifted_date(tz, -days)

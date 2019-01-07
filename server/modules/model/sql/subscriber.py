@@ -80,3 +80,29 @@ class Subscription(Base):
         'Report',
         back_populates='subscription'
     )
+
+    @staticmethod
+    def create_pretty_table():
+        t = PrettyTable()
+        t.field_names = [
+            'name',
+            'display_name',
+            'subscriber_active',
+            'active'
+        ]
+        return t
+
+    def to_pretty_table_row(self):
+        return [
+            self.subscriber.name,
+            self.subscriber.display_name,
+            self.subscriber.active,
+            self.active
+        ]
+
+    @staticmethod
+    def to_pretty_table(subscrs):
+        t = Subscription.create_pretty_table()
+        for s in subscrs:
+            t.add_row(s.to_pretty_table_row())
+        return t

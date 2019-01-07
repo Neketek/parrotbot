@@ -3,17 +3,17 @@ from modules.model import sql
 from sqlalchemy import and_
 from modules.controller.core.time import get_shifted_date
 from pytz import timezone
-from ..common import reply_msg_attachments, get_channel_sub
-from ..commont_text import no_days_range, days_range_is_not_int, no_names
+from .common import reply_msg_attachments, get_channel_sub
+from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 
-COMMAND_TEMPLATE = "`ls reports quest <days> <name,...>`"
+COMMAND = "`ls reports quest <days> <name,...>`"
 
 
 NO_QUEST_NAME = """
 Pls, provide quest name(s).
 {}
-""".format(COMMAND_TEMPLATE)
+""".format(COMMAND)
 
 NO_QUEST_WITH_NAME = """
 No quest with name(s):
@@ -21,7 +21,7 @@ No quest with name(s):
 """
 
 
-def NO_QUEST_WITH_NAMEs(titles):
+def NO_QUEST_WITH_NAME(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
@@ -38,20 +38,17 @@ def quest(c, session=None):
     cs_args = c.cs_command_args
     if len(args) < 5:
         if len(args) < 4:
-            c.reply(no_days_range)
-            return
-        c.reply(NO_QUEST_NAME)
-        return
+            return c.reply_and_wait(no_days_range(COMMAND))
+        return c.reply_and_wait(NO_QUEST_NAME)
     try:
         days = int(args[3])
     except ValueError:
-        c.reply(days_range_is_not_int(COMMAND_TEMPLATE))
+        return c.reply_and_wait(days_range_is_not_int(COMMAND))
     names = cs_args[4:]
     try:
         sub = get_channel_sub(c, session)
     except ValueError as e:
-        c.reply(e)
-        return
+        return c.reply_and_wait(e)
     quests = (
         session
         .query(sql.Questionnaire)
@@ -61,8 +58,7 @@ def quest(c, session=None):
     if len(quests) < len(names):
         found = [q.name for q in quests]
         not_found = [n for n in names if n not in found]
-        c.reply(NO_QUEST_WITH_NAMEs(not_found))
-        return
+        return c.reply_and_wait(NO_QUEST_WITH_NAME(not_found))
     tz = timezone(sub.tz)
     date_boundary = get_shifted_date(tz, -days)
     reports = (
