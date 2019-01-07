@@ -91,5 +91,4 @@ def __unsafe_save(c, session, data):
 def save(c, data, session=None):
     c.reply("Saving questionnaire to db...")
     __unsafe_save(c, session, data)
-    msg = c.reply(SUCCESS.format(data['title'])).get('message')
-    return c.result().wait(msg)
+    return c.reply_and_wait(SUCCESS.format(data['title']))

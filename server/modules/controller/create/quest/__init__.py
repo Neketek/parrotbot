@@ -24,19 +24,18 @@ Error:
 def quest(c):
     try:
         if c.i is None:
-            msg = c.reply(INITITAL_MSG).get('message')
-            return c.result().interactive('file').wait(msg)
+            return c.reply_and_wait(INITITAL_MSG).interactive('file')
         elif c.i.next == 'file':
             return download_template(c)
         elif isinstance(c.i.next, dict):
             if c.command == 'yes':
                 return save(c, c.i.next)
             elif c.command == 'no':
-                msg = c.reply('Creation stopped.').get('message')
-                return c.result().wait(msg)
+                return c.reply_and_wait('Creation stopped.')
             else:
-                msg = c.reply(REPEAT_CONFIRMATION).get('message')
-                return c.result().interactive(c.i.next).wait(msg)
+                return (
+                    c.reply_and_wait(REPEAT_CONFIRMATION)
+                    .interactive(c.i.next)
+                )
     except ValueError as e:
-        msg = c.reply(ERROR.format(e)).get('message')
-        return c.result().wait(msg)
+        return c.reply_and_wait(ERROR.format(e))
