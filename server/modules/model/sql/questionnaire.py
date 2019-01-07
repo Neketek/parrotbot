@@ -7,11 +7,13 @@ from prettytable import PrettyTable
 
 class Questionnaire(Base):
     NULL_EXPIRATION_STR = 'day end'
+    DEFAULT_RETENTION = 2
     __tablename__ = 'questionnaire'
     id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(256), unique=True, nullable=False)
     title = Column(String(256), unique=True, nullable=False)
     expiration = Column(Time(), nullable=True)
+    retention = Column(Integer(), default=DEFAULT_RETENTION, nullable=False)
     active = Column(Boolean(), default=True, nullable=False)
     subscriptions = relationship(
         'Subscription',

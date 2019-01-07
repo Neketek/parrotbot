@@ -4,6 +4,7 @@ from modules.model.sql import Questionnaire
 DATA_STR_TEMPLATE = """
 Name: {name}
 Title: {title}
+Retention: {retention} day(s)
 Expiration: {expiration}
 Questions:
 {questions}
@@ -28,6 +29,7 @@ def json_to_str(data):
         name=data['name'],
         title=data['title'],
         expiration=data.get('expiration', Questionnaire.NULL_EXPIRATION_STR),
+        retention=data.get('retention', Questionnaire.DEFAULT_RETENTION),
         questions=__list_to_str(data['questions']),
         subscribers=__list_to_str(data['subscribers']),
         schedule=__list_to_str(

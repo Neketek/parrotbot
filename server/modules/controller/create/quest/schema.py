@@ -15,6 +15,15 @@ def time_str_validator(value):
         raise ValidationError("Time is not in %H:%M format")
 
 
+def gt_validator(lower_bound):
+    def validator(value):
+        if value < lower_bound:
+            raise ValidationError(
+                "Value must be greater than {}"
+                .format(lower_bound)
+            )
+
+
 class ScheduleSchema(Schema):
     start = f.Integer(validate=v.Range(min=1, max=7))
     end = f.Integer(validate=v.Range(min=1, max=7))
@@ -42,6 +51,7 @@ class TemplateSchema(Schema):
     name = StrField(Questionnaire.name)
     title = StrField(Questionnaire.title)
     expiration = f.Str(validate=time_str_validator, required=False)
+    retention = f.Integer(validate=gt_validator(1), required=False)
     questions = f.List(
         StrField(Question.text),
         validate=v.Length(min=1)

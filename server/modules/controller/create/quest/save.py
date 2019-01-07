@@ -75,6 +75,7 @@ def __unsafe_save(c, session, data):
             title=data['title'],
             questions=[sql.Question(text=q) for q in questions],
             expiration=time_from_str(data.get('expiration')),
+            retention=data.get('retention'),
             subscriptions=[
                 sql.Subscription(
                     subscriber_id=s.id
