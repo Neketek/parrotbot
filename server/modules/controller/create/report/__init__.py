@@ -1,6 +1,6 @@
 from modules.controller.core import actions as a, Conditions as c
 from .request_report import request_report
-
+from modules.config.naming import short
 NO_TITLE = """
 Pls, provide questionnaire name.
 Ex. create report <name>.
@@ -13,7 +13,7 @@ Error:
 """
 
 
-@a.register(c.command('create', 'report'))
+@a.register(c.command(short.method.create, short.name.report))
 def report(
     c
 ):

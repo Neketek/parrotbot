@@ -1,6 +1,7 @@
 from modules.controller.core import actions as a, Conditions as c
 from .download_template import download_template
 from .save import save
+from modules.config.naming import short
 
 
 INITITAL_MSG = """
@@ -19,7 +20,7 @@ Error:
 """
 
 
-@a.register(c.command('create', 'quest'))
+@a.register(c.command(short.method.create, short.name.questionnaire))
 def quest(c):
     try:
         if c.i is None:

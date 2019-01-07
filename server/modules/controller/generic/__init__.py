@@ -3,11 +3,7 @@ from modules.controller.core import actions as a, Conditions as c
 
 @a.register(c.command('help'))
 def help(c):
-    msg = (
-        c.reply("Command args:{args}".format(args=c.command_args))
-        .get('message')
-    )
-    return c.result().wait(msg)
+    return c.reply_and_wait("you'll not find here any help...")
 
 
 @a.register(c.default())

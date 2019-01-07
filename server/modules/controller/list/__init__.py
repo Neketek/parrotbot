@@ -1,4 +1,5 @@
 from modules.controller.core import actions as a, Conditions as c
+from modules.config.naming import short
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
 from . import reports
@@ -14,9 +15,9 @@ Can't find questionnaire "{0}".
 """
 
 
-@a.register(c.command('ls', 'questions'))
+@a.register(c.command(short.method.list, short.name.question))
 @sql.session()
-def ls_questions(c, session=None):
+def question(c, session=None):
     try:
         name = c.cs_command_args[2]
     except IndexError:
@@ -40,9 +41,9 @@ def ls_questions(c, session=None):
     return c.result().wait(msg)
 
 
-@a.register(c.command('ls', 'quest'))
+@a.register(c.command(short.method.list, short.name.questionnaire))
 @sql.session()
-def ls_quest(c, session=None):
+def quest(c, session=None):
     quests = session\
         .query(sql.Questionnaire)\
         .order_by(sql.Questionnaire.id.asc())\
@@ -60,38 +61,10 @@ def ls_quest(c, session=None):
 
 @a.register(c.command('ls', 'subs'))
 @sql.session()
-def ls_subscribers(c, session=None):
-    subs = []
-    result = None
-    try:
-        quest = session\
-            .query(sql.Questionnaire)\
-            .filter(sql.Questionnaire.name == c.cs_command_args[2])\
-            .one()
-        subs = [
-            s.subscriber
-            for
-            s in quest.subscriptions
-            if s.active and s.subscriber.active
-        ]
-        result = 'Subscribers of "{}"\n{{}}'.format(c.cs_command_args[2])
-    except IndexError:
-        result = 'Subscribers\n{}'
-        subs = session\
-            .query(sql.Subscriber)\
-            .all()
-    except orme.NoResultFound:
-        msg = (
-            c.reply_code(
-                NO_QUEST_WITH_NAME.format(c.cs_command_args[2])
-            ).get('message')
-        )
-        return c.result().wait(msg)
-    msg = (
-        c.reply_code(
-            result.format(
-                sql.Subscriber.to_pretty_table(subs)
-            )
-        ).get('message')
-    )
-    return c.result().wait(msg)
+def subscriber(c, session=None):
+    pass
+
+
+@a.register(c.command('ls', 'ss'))
+def subscription(c, session=None):
+    pass

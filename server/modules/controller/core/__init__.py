@@ -484,27 +484,19 @@ class Conditions:
     @staticmethod
     def command(text, *args):
         def condition(c):
-            command_match = False
-            if len(c.command_args) == 0:
+            if len(c.command_args) < 1+len(args):
                 return False
-            if isinstance(text, abc.Iterable):
-                command_match = c.command_args[0] in text
-            else:
-                command_match = c.command_args[0] == text
-            if command_match and len(args) > 0:
-                if len(c.command_args) - len(args) < 1:
-                    return False
-                else:
-                    expected_args = c.command_args[1:len(args)+1]
-                    return expected_args == args
-            else:
-                return command_match
-        if isinstance(text, abc.Iterable):
-            condition.__name__ = "command {0}".format(text)
-        else:
-            condition.__name__ = "command '{0}'".format(text)
+            match = c.command_args[0] == text
+            args_match = True
+            if len(args) > 0:
+                received_args = c.command_args[1:len(args)+1]
+                args_match = received_args == args
+            return match and args_match
+
+        condition.__name__ = "command '{0}".format(text)
         if len(args) > 0:
             condition.__name__ += (" {}"*len(args)).format(*args)
+        condition.__name__ += "'"
         return condition
 
     @staticmethod

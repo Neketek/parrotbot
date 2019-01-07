@@ -5,7 +5,7 @@ from modules.controller.core.time import get_shifted_date
 from pytz import timezone
 from ..common import reply_msg_attachments, get_channel_sub
 from ..commont_text import no_days_range, days_range_is_not_int, no_names
-
+from modules.config.naming import short
 
 COMMAND_TEMPLATE = "`ls reports quest <days> <name,...>`"
 
@@ -25,7 +25,13 @@ def NO_QUEST_WITH_NAMEs(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
-@a.register(c.command('ls', 'reports', 'quest'))
+@a.register(
+    c.command(
+        short.method.list,
+        short.name.report,
+        short.name.questionnaire
+    )
+)
 @sql.session()
 def quest(c, session=None):
     args = c.command_args

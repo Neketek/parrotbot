@@ -3,6 +3,7 @@ from sqlalchemy.orm import exc as orme
 from modules.controller.core import\
     parsers as p, actions as a, Conditions as c
 from ..common import labels as lb, checks as ch
+from modules.config.naming import short
 
 
 COMMAND = """
@@ -136,12 +137,24 @@ def __get_subs_sub_mode(c, session):
     return subscrs, setter, value
 
 
-@a.register(c.command('set', 'subscr', 'quest'))
-@a.register(c.command('set', 'subscr', 'sub'))
+@a.register(
+    c.command(
+        short.method.set,
+        short.name.subscription,
+        short.name.questionnaire
+    )
+)
+@a.register(
+    c.command(
+        short.method.set,
+        short.name.subscription,
+        short.name.subscriber
+    )
+)
 @sql.session()
 def subscription(c, session=None):
     try:
-        if c.command_args[2] == 'quest':
+        if c.command_args[2] == short.name.questionnaire:
             subscrs, setter, value = __get_subs_quest_mode(c, session)
         else:
             subscrs, setter, value = __get_subs_sub_mode(c, session)

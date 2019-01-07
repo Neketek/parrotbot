@@ -4,6 +4,7 @@ from modules.controller.core.time import get_now
 from sqlalchemy import and_
 from sqlalchemy.orm import exc as orme
 from pytz import timezone
+from modules.config.naming import short
 
 
 NO_REPORTS = """
@@ -192,7 +193,7 @@ def next_question(c, session, data):
     return c.result().wait(msg).interactive(data)
 
 
-@a.register(c.command('update', 'report'))
+@a.register(c.command(short.method.update, short.name.report))
 @sql.session()
 def report(c, session=None):
     try:

@@ -5,14 +5,21 @@ from modules.controller.core.time import get_shifted_date
 from pytz import timezone
 from ..common import reply_msg_attachments, get_channel_sub
 from ..commont_text import no_days_range, days_range_is_not_int, no_names
+from modules.config.naming import short
 
 
-COMMAND_TEMPLATE = "`ls reports sub <days> <sub,...>`"
+COMMAND = "`{} {} {} <{}> <{},...>`".format(
+    short.method.ls,
+    short.name.report,
+    short.name.subscriber,
+    short.param.days,
+    'subscriber'
+)
 
 NO_SUB_NAMES = """
 Pls, provide sub name(s)
 {}
-""".format(COMMAND_TEMPLATE)
+""".format(COMMAND)
 
 NO_SUBS_WITH_NAME = """
 No subs with name(s):
@@ -24,13 +31,19 @@ def no_subs_with_name(names):
     return no_names(NO_SUBS_WITH_NAME, names)
 
 
-@a.register(c.command('ls', 'reports', 'sub'))
+@a.register(
+    c.command(
+        short.method.list,
+        short.name.report,
+        short.name.subscriber
+    )
+)
 @sql.session()
 def subscriber(c, session=None):
     args = c.command_args
     cs_args = c.cs_command_args
     if len(args) < 4:
-        c.reply(no_days_range(COMMAND_TEMPLATE))
+        c.reply(no_days_range(COMMAND))
         return
     if len(args) < 5:
         c.reply(NO_SUB_NAMES)
@@ -38,7 +51,7 @@ def subscriber(c, session=None):
     try:
         days = int(c.command_args[3])
     except ValueError:
-        c.reply(days_range_is_not_int(COMMAND_TEMPLATE))
+        c.reply(days_range_is_not_int(COMMAND))
         return
     try:
         sub = get_channel_sub(c, session)
