@@ -3,6 +3,8 @@ from modules.controller.core import\
     parsers as p, actions as a, Conditions as c
 from ..common import labels as lb, checks as ch
 from modules.config.naming import short
+from modules.controller import permission
+
 
 COMMAND = """
 `set sub <param> <value> <name,...>`
@@ -47,6 +49,7 @@ def set_subs_bot_active(c, session, names, value):
 
 @a.register(c.command(short.method.set, short.name.subscriber))
 @sql.session()
+@permission.admin()
 def subscriber(c, session=None):
     args = c.command_args[2:]
     cs_args = c.cs_command_args[2:]

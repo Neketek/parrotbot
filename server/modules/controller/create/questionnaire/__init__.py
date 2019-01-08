@@ -1,7 +1,9 @@
 from modules.controller.core import actions as a, Conditions as c
+from modules.model import sql
 from .download_template import download_template
 from .save import save
 from modules.config.naming import short
+from modules.controller import permission
 
 
 INITITAL_MSG = """
@@ -21,7 +23,9 @@ Error:
 
 
 @a.register(c.command(short.method.create, short.name.questionnaire))
-def quest(c):
+@sql.session()
+@permission.admin()
+def quest(c, session=None):
     try:
         if c.i is None:
             return c.reply_and_wait(INITITAL_MSG).interactive('file')
@@ -29,7 +33,7 @@ def quest(c):
             return download_template(c)
         elif isinstance(c.i.next, dict):
             if c.command == 'yes':
-                return save(c, c.i.next)
+                return save(c, session, c.i.next)
             elif c.command == 'no':
                 return c.reply_and_wait('Creation stopped.')
             else:

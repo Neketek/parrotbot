@@ -3,6 +3,7 @@ from modules.model import sql
 from modules.controller.set.common.checks import compare_found_expected
 from modules.config.naming import short
 from sqlalchemy.orm import exc as orme
+from modules.controller import permission
 
 NO_QUEST_NAME = """
 Pls, provide questionnaire name.
@@ -19,6 +20,7 @@ Pls, provide subscriber names(s).
 
 @a.register(c.command(short.method.delete, short.name.subscription))
 @sql.session()
+@permission.admin()
 def subscription(c, session=None):
     cs_args = c.command_args[2:]
     try:

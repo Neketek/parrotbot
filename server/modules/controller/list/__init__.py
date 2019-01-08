@@ -2,6 +2,7 @@ from modules.controller.core import actions as a, Conditions as c
 from modules.config.naming import short
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
+from modules.controller import permission
 from . import reports
 
 
@@ -16,6 +17,7 @@ Can't find questionnaire "{0}".
 
 @a.register(c.command(short.method.list, short.name.question))
 @sql.session()
+@permission.admin()
 def question(c, session=None):
     try:
         name = c.cs_command_args[2]
@@ -39,6 +41,7 @@ def question(c, session=None):
 
 @a.register(c.command(short.method.list, short.name.questionnaire))
 @sql.session()
+@permission.admin()
 def questionnaire(c, session=None):
     quests = session\
         .query(sql.Questionnaire)\
@@ -52,6 +55,7 @@ def questionnaire(c, session=None):
 
 @a.register(c.command(short.method.list, short.name.subscriber))
 @sql.session()
+@permission.admin()
 def subscriber(c, session=None):
     subs = (
         session
@@ -71,6 +75,7 @@ def subscriber(c, session=None):
 
 @a.register(c.command(short.method.list, short.name.subscription))
 @sql.session()
+@permission.admin()
 def subscription(c, session=None):
     try:
         name = c.cs_command_args[2]

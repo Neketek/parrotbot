@@ -87,8 +87,7 @@ def __unsafe_save(c, session, data):
     session.commit()
 
 
-@sql.session()
-def save(c, data, session=None):
+def save(c, session, data):
     c.reply("Saving questionnaire to db...")
     __unsafe_save(c, session, data)
     return c.reply_and_wait(SUCCESS.format(data['title']))

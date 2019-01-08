@@ -2,6 +2,8 @@ from modules.controller.core import actions as a, Conditions as c
 from modules.model import sql
 from .update_subscribers import update_subscribers
 from modules.config.naming import short
+from modules.controller import permission
+
 
 ERROR = """
 Can't update subscribers.
@@ -21,6 +23,7 @@ Updating subscribers cache...
 
 @a.register(c.command(short.method.update, short.name.subscriber))
 @sql.session()
+@permission.admin()
 def subscribers(c, session=None):
     try:
         c.reply(INITIAL, code_block=True)

@@ -4,7 +4,7 @@ from modules.model import sql
 from ..common import labels as lb, checks as ch
 # from sqlalchemy.orm import exc as orme
 from modules.config.naming import short
-
+from modules.controller import permission
 
 COMMAND = """
 `set quest <param> <value> <name,...>`
@@ -39,6 +39,7 @@ def set_quest_active(c, session, names, value):
 
 @a.register(c.command(short.method.set, short.name.questionnaire))
 @sql.session()
+@permission.admin()
 def quest(c, session=None):
     cs_args = c.cs_command_args[2:]
     args = c.command_args[2:]

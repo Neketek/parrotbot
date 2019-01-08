@@ -2,7 +2,7 @@ from modules.controller.core import actions as a, Conditions as c
 from modules.model import sql
 from modules.config.naming import short
 from modules.controller.set.common.checks import compare_found_expected
-
+from modules.controller import permission
 
 NO_QUEST_NAMES = """
 Pls, provide questionnaire name(s).
@@ -11,6 +11,7 @@ Pls, provide questionnaire name(s).
 
 @a.register(c.command(short.method.delete, short.name.questionnaire))
 @sql.session()
+@permission.admin()
 def questionnaire(c, session=None):
     names = c.cs_command_args[2:]
     if len(names) == 0:

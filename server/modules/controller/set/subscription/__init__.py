@@ -4,7 +4,7 @@ from modules.controller.core import\
     parsers as p, actions as a, Conditions as c
 from ..common import labels as lb, checks as ch
 from modules.config.naming import short
-
+from modules.controller import permission
 
 COMMAND = """
 `set subscr <quest|subs> <quest_name> <param> <value> <sub_name,...>`
@@ -152,6 +152,7 @@ def __get_subs_sub_mode(c, session):
     )
 )
 @sql.session()
+@permission.admin()
 def subscription(c, session=None):
     try:
         if c.command_args[2] == short.name.questionnaire:

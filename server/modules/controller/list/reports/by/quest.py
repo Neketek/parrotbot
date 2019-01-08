@@ -6,6 +6,7 @@ from pytz import timezone
 from .common import reply_msg_attachments, get_channel_sub
 from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
+from modules.controller import permission
 
 COMMAND = "`ls reports quest <days> <name,...>`"
 
@@ -33,6 +34,7 @@ def no_quest_with_name(titles):
     )
 )
 @sql.session()
+@permission.admin()
 def quest(c, session=None):
     args = c.command_args
     cs_args = c.cs_command_args

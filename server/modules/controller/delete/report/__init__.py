@@ -2,6 +2,7 @@ from modules.controller.core import actions as a, Conditions as c
 from modules.model import sql
 from modules.config.naming import short
 from modules.controller.set.common.checks import compare_found_expected
+from modules.controller import permission
 
 
 NO_IDS = """
@@ -11,6 +12,7 @@ Pls, provide report id(s).
 
 @a.register(c.command(short.method.delete, short.name.report))
 @sql.session()
+@permission.admin()
 def report(c, session=None):
     ids = c.command_args[2:]
     if len(ids) == 0:
