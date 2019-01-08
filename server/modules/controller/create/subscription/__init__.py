@@ -18,7 +18,7 @@ Pls, provide subscriber name(s).
 """
 
 
-@a.register(c.command(short.method.create, short.name.subscriber))
+@a.register(c.command(short.method.create, short.name.subscription))
 @sql.session()
 def subscription(c, session=None):
     cs_args = c.cs_command_args[2:]

@@ -30,7 +30,7 @@ def report(c, session=None):
         )
     except ValueError as e:
         return c.reply_and_wait(e)
-    reports_query.delete()
+    reports_query.delete(synchronize_session=False)
     session.commit()
     return c.reply_and_wait(
         "{} report(s) deleted."

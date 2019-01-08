@@ -17,12 +17,12 @@ COMMAND = "`{} {} {} <{}> <{},...>`".format(
 )
 
 NO_SUB_NAMES = """
-Pls, provide sub name(s)
+Pls, provide subscriber name(s)
 {}
 """.format(COMMAND)
 
 NO_SUBS_WITH_NAME = """
-No subs with name(s):
+Subscriber(s) not found:
 {}
 """
 

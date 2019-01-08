@@ -125,6 +125,7 @@ def report_to_msg_attachment(session, quest, report, sub):
             for
             q, a in qa
         ],
+        footer="*id: {}*".format(report.id),
         pretext="*<@{}> {} {}->{} {}*".format(
             header['uid'],
             header['title'],

@@ -56,7 +56,8 @@ def subscription(c, session=None):
         )
     except ValueError as e:
         return c.reply_and_wait(e)
-    subscrs_query.delete()
+    for s in subscrs:
+        session.delete(s)
     session.commit()
     return c.reply_and_wait(
         "Done. {} subscription(s) removed from {} questionnaire"

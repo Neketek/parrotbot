@@ -11,17 +11,17 @@ COMMAND = "`ls reports quest <days> <name,...>`"
 
 
 NO_QUEST_NAME = """
-Pls, provide quest name(s).
+Pls, provide questionnaire name(s).
 {}
 """.format(COMMAND)
 
 NO_QUEST_WITH_NAME = """
-No quest with name(s):
+Questionnaire(s) not found:
 {}
 """
 
 
-def NO_QUEST_WITH_NAME(titles):
+def no_quest_with_name(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
@@ -58,7 +58,7 @@ def quest(c, session=None):
     if len(quests) < len(names):
         found = [q.name for q in quests]
         not_found = [n for n in names if n not in found]
-        return c.reply_and_wait(NO_QUEST_WITH_NAME(not_found))
+        return c.reply_and_wait(no_quest_with_name(not_found))
     tz = timezone(sub.tz)
     date_boundary = get_shifted_date(tz, -days)
     reports = (
