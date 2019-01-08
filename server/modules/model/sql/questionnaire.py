@@ -66,7 +66,7 @@ class Questionnaire(Base):
 
 
 class Schedule(Base):
-    __tablename__ = 'schedule',
+    __tablename__ = 'schedule'
     id = Column(
         Integer(),
         primary_key=True
@@ -85,7 +85,10 @@ class Schedule(Base):
     )
     questionnaire_id = Column(
         Integer(),
-        ForeignKey('questionnaire.id'),
+        ForeignKey(
+            'questionnaire.id',
+            ondelete='CASCADE'
+        ),
         nullable=False
     )
     questionnaire = relationship(
@@ -100,7 +103,10 @@ class Question(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     questionnaire_id = Column(
         Integer(),
-        ForeignKey('questionnaire.id'),
+        ForeignKey(
+            'questionnaire.id',
+            ondelete='CASCADE'
+        ),
         nullable=True
     )
     text = Column(String(256), nullable=False)

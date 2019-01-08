@@ -16,6 +16,7 @@ def session(key="session"):
         def wrapper(*args, **kwargs):
             try:
                 session = Session()
+                session.execute('PRAGMA foreign_keys=ON')
                 kwargs = dict(kwargs)
                 kwargs[key] = session
                 return func(*args, **kwargs)

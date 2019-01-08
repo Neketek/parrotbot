@@ -10,6 +10,7 @@ class Subscriber(Base):
     name = Column(String(256), unique=True)
     display_name = Column(String(256), nullable=False)
     admin = Column(Boolean(), default=False)
+    bot_admin = Column(Boolean(), default=False)
     channel_id = Column(String(256), unique=True)
     tz = Column(String(256), nullable=False)
     active = Column(Boolean(), default=True)
@@ -30,6 +31,7 @@ class Subscriber(Base):
             "name",
             "display_name",
             "role",
+            "bot_admin",
             "tz",
             "active"
         ]
@@ -40,6 +42,7 @@ class Subscriber(Base):
             self.name,
             self.display_name,
             self.role,
+            self.bot_admin,
             self.tz,
             self.active
         ]
@@ -57,12 +60,18 @@ class Subscription(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     questionnaire_id = Column(
         Integer(),
-        ForeignKey('questionnaire.id'),
+        ForeignKey(
+            'questionnaire.id',
+            ondelete='CASCADE'
+        ),
         nullable=False
     )
     subscriber_id = Column(
         String(256),
-        ForeignKey('subscriber.id'),
+        ForeignKey(
+            'subscriber.id',
+            ondelete='CASCADE'
+        ),
         nullable=False
     )
     active = Column(Boolean(), default=True)

@@ -12,7 +12,10 @@ class Report(Base):
     completed = Column(DateTime(), nullable=True)
     subscription_id = Column(
         Integer(),
-        ForeignKey('subscription.id'),
+        ForeignKey(
+            'subscription.id',
+            ondelete='CASCADE'
+        ),
         nullable=False
     )
     subscription = relationship(
@@ -27,10 +30,24 @@ class Report(Base):
 
 
 class Answer(Base):
-    __tablename__ = 'answer',
+    __tablename__ = 'answer'
     id = Column(String(64), primary_key=True)
-    question_id = Column(Integer(), ForeignKey('question.id'), nullable=False)
-    report_id = Column(Integer(), ForeignKey('report.id'), nullable=False)
+    question_id = Column(
+        Integer(),
+        ForeignKey(
+            'question.id',
+            ondelete='CASCADE'
+        ),
+        nullable=False
+    )
+    report_id = Column(
+        Integer(),
+        ForeignKey(
+            'report.id',
+            ondelete='CASCADE'
+        ),
+        nullable=False
+    )
     text = Column(String(512), nullable=False)
     report = relationship(
         'Report',

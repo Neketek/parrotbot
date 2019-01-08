@@ -1,3 +1,3 @@
 from . import questionnaire
-from . import subscriber
+from . import report
 from . import subscription

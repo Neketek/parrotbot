@@ -39,7 +39,7 @@ def question(c, session=None):
 
 @a.register(c.command(short.method.list, short.name.questionnaire))
 @sql.session()
-def quest(c, session=None):
+def questionnaire(c, session=None):
     quests = session\
         .query(sql.Questionnaire)\
         .order_by(sql.Questionnaire.id.asc())\

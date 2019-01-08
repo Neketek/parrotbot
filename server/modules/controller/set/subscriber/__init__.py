@@ -35,6 +35,16 @@ def set_subs_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
+def set_subs_bot_active(c, session, names, value):
+    value = p.Str.bool(value)
+    subs = get_subs_by_name(session, names)
+    for s in subs:
+        s.bot_admin = value
+        session.add(s)
+    session.commit()
+    return c.reply_and_wait("Done.")
+
+
 @a.register(c.command(short.method.set, short.name.subscriber))
 @sql.session()
 def subscriber(c, session=None):
@@ -54,6 +64,8 @@ def subscriber(c, session=None):
     try:
         if param == 'active':
             return set_subs_active(c, session, names, value)
+        if param == 'bot_admin':
+            return set_subs_bot_active(c, session, names, value)
         else:
             return c.reply_and_wait(lb.unknown_param_name(COMMAND))
     except ValueError as e:
