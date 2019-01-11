@@ -23,7 +23,7 @@ Updating subscribers cache...
 
 @a.register(c.command(short.method.update, short.name.subscriber))
 @sql.session()
-@permission.admin()
+@permission.admin(allow_when_no_subs=True)
 def subscribers(c, session=None):
     try:
         c.reply(INITIAL, code_block=True)

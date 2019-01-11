@@ -33,7 +33,7 @@ def subscription(c, session=None):
             .filter(sql.Questionnaire.name == quest_name)
             .one()
         )
-    except orme.NoResultsFound:
+    except orme.NoResultFound:
         return c.reply_and_wait(
             NO_QUEST_WITH_NAME.format(quest_name)
         )

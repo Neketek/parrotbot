@@ -1,6 +1,8 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
 from functools import wraps
+from sqlalchemy import func as sqlf
+
 
 SUB_NOT_FOUND = """
 Can't find you in subscribers cache.
@@ -12,7 +14,7 @@ You need to be slack or bot admin to perform this operation.
 """
 
 
-def admin(context_pos=0, sql_session_key='session'):
+def admin(context_pos=0, sql_session_key='session', allow_when_no_subs=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -29,7 +31,15 @@ def admin(context_pos=0, sql_session_key='session'):
                     return c.reply_and_wait(NOT_ADMIN)
                 else:
                     return func(*args, **kwargs)
-            except orme.NoResultsFound:
-                raise c.reply_and_wait(SUB_NOT_FOUND)
+            except orme.NoResultFound:
+                if allow_when_no_subs:
+                    subs_count = (
+                        session
+                        .query(sqlf.count(sql.Subscriber.id))
+                        .scalar()
+                    )
+                    if subs_count == 0:
+                        return func(*args, **kwargs)
+                return c.reply_and_wait(SUB_NOT_FOUND)
         return wrapper
     return decorator

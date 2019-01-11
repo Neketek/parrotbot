@@ -86,7 +86,7 @@ def __get_subs_quest_mode(c, session):
             .filter(sql.Questionnaire.name == name)
             .one()
         )
-    except orme.NoResultsFound:
+    except orme.NoResultFound:
         raise ValueError(QUEST_NOT_FOUND.format(name))
     subscrs = (
         session
@@ -118,7 +118,7 @@ def __get_subs_sub_mode(c, session):
             .filter(sql.Subscriber.name == name)
             .one()
         )
-    except orme.NoResultsFound:
+    except orme.NoResultFound:
         raise ValueError(SUB_NOT_FOUND.format(name))
     subscrs = (
         session

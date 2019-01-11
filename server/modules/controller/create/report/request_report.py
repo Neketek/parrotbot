@@ -49,6 +49,8 @@ def request_report(c, quest=None, name=None, session=None):
     now = get_utcnow()
     msg = dict()
     for s in quest.subscriptions:
+        if not s.subscriber.active or s.subscriber.archived:
+            continue
         tz = timezone(s.subscriber.tz)
         created = now.astimezone(tz)
         expiration, dt = get_expiration(quest, created, tz)

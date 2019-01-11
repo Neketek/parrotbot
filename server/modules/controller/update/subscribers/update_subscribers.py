@@ -1,5 +1,7 @@
 import json
 from modules.model import sql
+from sqlalchemy import func
+
 
 GET_USERS_LIST_ERROR = """
 Can't get slack.users.list
@@ -63,11 +65,55 @@ def get_users_with_channels_data(c):
     return users
 
 
+def get_subs_query(session, ids):
+    return (
+        session
+        .query(sql.Subscriber)
+        .filter(sql.Subscriber.id.in_(ids))
+    )
+
+
+def try_to_delete_subs(session, ids):
+    if not ids:
+        return
+    delete_plan = (
+        session
+        .query(
+            sql.Subscriber.id.label('id'),
+            (func.count(sql.Report.id) == 0).label('delete')
+        )
+        .outerjoin(sql.Subscription)
+        .outerjoin(sql.Report)
+        .filter(sql.Subscriber.id.in_(ids))
+        .group_by(sql.Subscriber.id)
+        .all()
+    )
+    delete_ids = []
+    archive_ids = []
+    for id, delete in delete_plan:
+        if delete:
+            delete_ids.append(id)
+        else:
+            archive_ids.append(id)
+    if delete_ids:
+        get_subs_query(session, delete_ids).delete(
+            synchronize_session=False
+        )
+    if archive_ids:
+        get_subs_query(session, archive_ids).update(
+            {
+                sql.Subscriber.archived: True
+            },
+            synchronize_session=False
+        )
+
+
 def update_subscribers(c, session):
     users = get_users_with_channels_data(c)
     subs = session.query(sql.Subscriber).all()
     # updating existing subs
     updated_subs_ids = []
+    delete_subs_ids = []
     for s in subs:
         for u in users:
             if u['id'] == s.id:
@@ -80,9 +126,8 @@ def update_subscribers(c, session):
                 session.add(s)
                 break
         else:
-            if len(s.subscriptions) == 0:
-                session.delete(s)
-    # new subs
+            delete_subs_ids.append(s.id)
+    try_to_delete_subs(session, delete_subs_ids)
     session.bulk_save_objects(
         [
             sql.Subscriber(**u)

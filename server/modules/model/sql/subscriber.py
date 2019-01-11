@@ -14,6 +14,7 @@ class Subscriber(Base):
     channel_id = Column(String(256), unique=True)
     tz = Column(String(256), nullable=False)
     active = Column(Boolean(), default=True)
+    archived = Column(Boolean(), default=False)
 
     subscriptions = relationship(
         'Subscription',
@@ -33,7 +34,8 @@ class Subscriber(Base):
             "role",
             "bot_admin",
             "tz",
-            "active"
+            "active",
+            "archived"
         ]
         return t
 
@@ -44,7 +46,8 @@ class Subscriber(Base):
             self.role,
             self.bot_admin,
             self.tz,
-            self.active
+            self.active,
+            self.archived
         ]
 
     @staticmethod
