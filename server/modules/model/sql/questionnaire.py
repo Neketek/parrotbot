@@ -11,7 +11,7 @@ class Questionnaire(Base):
     __tablename__ = 'questionnaire'
     id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(256), unique=True, nullable=False)
-    title = Column(String(256), unique=True, nullable=False)
+    title = Column(String(256), nullable=False)
     expiration = Column(Time(), nullable=True)
     retention = Column(Integer(), default=DEFAULT_RETENTION, nullable=False)
     active = Column(Boolean(), default=True, nullable=False)

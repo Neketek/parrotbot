@@ -1,4 +1,5 @@
 from modules.model import sql
+from sqlalchemy import not_
 from sqlalchemy.orm import exc as orme
 from datetime import datetime
 import json
@@ -66,9 +67,12 @@ def __unsafe_save(c, session, data):
             )
     questions = data['questions']
     schedule = data['schedule']
-    subs = session\
-        .query(sql.Subscriber)\
+    subs = (
+        session
+        .query(sql.Subscriber)
         .filter(sql.Subscriber.name.in_(subs))
+        .filter(not_(sql.Subscriber.archived))
+    )
     session.add(
         sql.Questionnaire(
             name=data['name'],

@@ -19,6 +19,15 @@ def get_today(tz):
         )
 
 
+def get_relative_shifted_date_start(dt, days=1):
+    return (dt + timedelta(days=days)).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+
 def get_shifted_date(tz, days):
     return get_today(tz)+timedelta(days=days)
 

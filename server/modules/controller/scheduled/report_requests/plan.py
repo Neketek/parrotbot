@@ -42,7 +42,7 @@ def get_quests_schedule(session):
         schedules = []
         for sch in q.schedule:
             days = [False]*7
-            time = str(sch.time)
+            time = sch.time.strftime("%H:%M")
             for i in range(sch.start-1, sch.end):
                 days[i] = True
             schedules.append(dict(days=days, time=time))
@@ -83,12 +83,17 @@ def get_execution_schedule(quest_schedules):
     return timezones
 
 
-def get_schedule(session):
+def get_plan(session):
     quests = get_quests_schedule(session)
     execution = get_execution_schedule(quests)
     return dict(quest=quests, execution=execution)
 
 
-def update_schedule(session):
-    with open("schedule.json", "w") as f:
-        f.write(json.dumps(get_schedule(session), indent=4))
+def load():
+    with open('plan.json', 'r') as f:
+        return json.loads(f.read())
+
+
+def update(session):
+    with open('plan.json', 'w') as f:
+        f.write(json.dumps(get_plan(session), indent=4))
