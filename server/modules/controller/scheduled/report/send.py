@@ -90,7 +90,7 @@ def send(c, session, plan, utcnow):
                 td = expiration - created
             else:
                 etime = datetime.time.strptime(expiration, TIME_FORMAT)
-                td = timedelta(hours=etime.hours, minutes=etime.minutes)
+                td = timedelta(hours=etime.hour, minutes=etime.minute)
                 expiration = created + td
             utc_expiration = utcnow + td
             msg = create_msg(title, td)
