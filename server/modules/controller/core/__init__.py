@@ -58,7 +58,8 @@ class Context(object):
             self.i = Context.Interactive(*args, **kwargs)
             return self
 
-    def __init__(self, client, message, interactive=None):
+    def __init__(self, client, message=None, interactive=None):
+        message = dict() if message is None else message
         self.client = client
         self.client_msg_id = message.get('client_msg_id')
         self.msg_type = message.get('type')

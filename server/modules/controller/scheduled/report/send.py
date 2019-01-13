@@ -15,8 +15,7 @@ def __get_or_create(t, k, d):
         return d
 
 
-def create_msg(title, created, expiration):
-    td = expiration - created
+def create_msg(title, td):
     hours = td.seconds // 3600
     minutes = (td.seconds - 3600 * hours) // 60
     return REPORT_REQUEST_MSG_FORMAT.format(
@@ -85,19 +84,24 @@ def send(c, session, plan, utcnow):
         quest = quest_plan[str(qid)]
         title = quest['title']
         expiration = quest['expiration']
-        if expiration is not None:
-            expiration = datetime.time.strptime(expiration, TIME_FORMAT)
         for created, subscriptions in request.items():
             if expiration is None:
-                expiration = get_relative_shifted_date_start(created, days=1)
-            msg = create_msg(title, created, expiration)
+                expiration = get_relative_shifted_date_start(created, 1)
+                td = expiration - created
+            else:
+                etime = datetime.time.strptime(expiration, TIME_FORMAT)
+                td = timedelta(hours=etime.hours, minutes=etime.minutes)
+                expiration = created + td
+            utc_expiration = utcnow + td
+            msg = create_msg(title, td)
             channels = []
             for id, channel in subscriptions:
                 reports.append(
                     sql.Report(
                         subscription_id=id,
                         created=created,
-                        expiration=expiration
+                        expiration=expiration,
+                        utc_expiration=utc_expiration
                     )
                 )
                 channels.append(channel)
