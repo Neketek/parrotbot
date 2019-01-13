@@ -1,0 +1,110 @@
+from .constant import REPORT_REQUEST_MSG_FORMAT, TIME_FORMAT
+from datetime import datetime, timedelta
+from modules.controller.core.time import \
+    get_utcnow, get_relative_shifted_date_start
+from pytz import timezone
+from modules.model import sql
+import json
+
+
+def __get_or_create(t, k, d):
+    try:
+        return t[k]
+    except KeyError:
+        t[k] = d
+        return d
+
+
+def create_msg(title, created, expiration):
+    td = expiration - created
+    hours = td.seconds // 3600
+    minutes = (td.seconds - 3600 * hours) // 60
+    return REPORT_REQUEST_MSG_FORMAT.format(
+        title=title,
+        hours=hours,
+        minutes=minutes
+    )
+
+
+def __dict_to_json_dict(source):
+    if isinstance(source, dict):
+        result = dict()
+        for key, item in source.items():
+            result[__dict_to_json_dict(key)] = __dict_to_json_dict(item)
+        return result
+    elif isinstance(source, list):
+        return [__dict_to_json_dict(i) for i in source]
+    elif isinstance(source, datetime):
+        return source.strftime("%d-%m-%Y %H:%M")
+    else:
+        return source
+
+
+def __dump_to_file(fname, source):
+    with open(fname, "w") as f:
+        f.write(
+            json.dumps(
+                __dict_to_json_dict(source),
+                indent=4
+            )
+        )
+
+
+def send(c, session, plan, utcnow):
+    execution_plan = plan['execution']
+    quest_plan = plan['quest']
+    report_requests = dict()
+    # building report requests
+    # quest_id->creation_time->subscriptions->[(subscr.id, channel)]
+    for tz, tzdays in execution_plan.items():
+        tzdatetime = utcnow.astimezone(timezone(tz))
+        tztime = tzdatetime.time().strftime("%H:%M")
+        tztime = tzdays[tzdatetime.weekday()].get(tztime)
+        if tztime is None:
+            continue
+        for qid in tztime:
+            subscriptions = quest_plan[str(qid)]['subscriptions'][tz]
+            quest_report_requests = __get_or_create(
+                report_requests,
+                qid,
+                dict()
+            )
+            quest_subscriptions = __get_or_create(
+                quest_report_requests,
+                tzdatetime,
+                list()
+            )
+            quest_subscriptions += subscriptions
+    # empty dict evaluates as false, here is small optimization
+    if not report_requests:
+        return
+    __dump_to_file("report_requests.json", report_requests)
+    msgs = []
+    reports = []
+    for qid, request in report_requests.items():
+        quest = quest_plan[str(qid)]
+        title = quest['title']
+        expiration = quest['expiration']
+        if expiration is not None:
+            expiration = datetime.time.strptime(expiration, TIME_FORMAT)
+        for created, subscriptions in request.items():
+            if expiration is None:
+                expiration = get_relative_shifted_date_start(created, days=1)
+            msg = create_msg(title, created, expiration)
+            channels = []
+            for id, channel in subscriptions:
+                reports.append(
+                    sql.Report(
+                        subscription_id=id,
+                        created=created,
+                        expiration=expiration
+                    )
+                )
+                channels.append(channel)
+            msgs.append((msg, channels,))
+    __dump_to_file("msgs.json", msgs)
+    session.bulk_save_objects(reports)
+    session.commit()
+    for msg, channels in msgs:
+        for ch in channels:
+            c.send(ch, msg)
