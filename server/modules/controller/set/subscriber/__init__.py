@@ -46,7 +46,7 @@ def set_subs_bot_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):

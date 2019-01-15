@@ -169,8 +169,8 @@ def __get_subs_sub_mode(c, session):
     return subscrs, setter, value
 
 
-@a.register(c.command(*__CMD[__SUB]))
-@a.register(c.command(*__CMD[__QUEST]))
+@a.register(c.command(*__CMD[__SUB], cmd_str=CMD[__SUB]))
+@a.register(c.command(*__CMD[__QUEST], cmd_str=CMD[__QUEST]))
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):

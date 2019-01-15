@@ -9,7 +9,7 @@ from modules.controller.core import utils
 __CMD = (short.method.delete, short.name.subscription,)
 __PARAMS = [
     "{}_name".format(short.name.questionnaire),
-    "{}_name".format(short.name.subcriber)
+    "{}_name".format(short.name.subscriber)
 ]
 CMD = utils.cmd_str(*__CMD, params=__PARAMS)
 
@@ -28,7 +28,7 @@ Pls, provide subscriber names(s).
 """.format(CMD)
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):

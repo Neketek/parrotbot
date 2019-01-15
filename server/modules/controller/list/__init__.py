@@ -21,7 +21,12 @@ __CMD[short.name.question] = (short.method.list, short.name.question, )
 CMD[short.name.question] = utils.cmd_str(*__CMD[short.name.question])
 
 
-@a.register(c.command(*__CMD[short.name.question]))
+@a.register(
+    c.command(
+        *__CMD[short.name.question],
+        cmd_str=CMD[short.name.question]
+    )
+)
 @sql.session()
 @permission.admin()
 def question(c, session=None):
@@ -52,7 +57,12 @@ __CMD[short.name.questionnaire] = (
 CMD[short.name.questionnaire] = utils.cmd_str(*__CMD[short.name.questionnaire])
 
 
-@a.register(c.command(*__CMD[short.name.questionnaire]))
+@a.register(
+    c.command(
+        *__CMD[short.name.questionnaire],
+        cmd_str=CMD[short.name.questionnaire]
+    )
+)
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):
@@ -70,7 +80,12 @@ __CMD[short.name.subscriber] = (short.method.list, short.name.subscriber, )
 CMD[short.name.subscriber] = utils.cmd_str(*__CMD[short.name.subscriber])
 
 
-@a.register(c.command(*__CMD[short.name.subscriber]))
+@a.register(
+    c.command(
+        *__CMD[short.name.subscriber],
+        cmd_str=CMD[short.name.subscriber]
+    )
+)
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):
@@ -99,7 +114,12 @@ CMD[short.name.subscription] = utils.cmd_str(
 )
 
 
-@a.register(c.command(*__CMD[short.name.subscription]))
+@a.register(
+    c.command(
+        *__CMD[short.name.subscription],
+        cmd_str=CMD[short.name.subscription]
+    )
+)
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):

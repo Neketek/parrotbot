@@ -24,7 +24,7 @@ Updating subscribers cache...
 """
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin(allow_when_no_subs=True)
 def subscribers(c, session=None):

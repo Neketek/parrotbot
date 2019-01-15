@@ -7,8 +7,8 @@ from modules.controller.core import utils
 
 __CMD = (short.method.create, short.name.subscription,)
 __PARAMS = [
-    "{}_name".format(short.questionnaire),
-    "{}_name".format(short.subscriber)
+    "{}_name".format(short.name.questionnaire),
+    "{}_name".format(short.name.subscriber)
 ]
 CMD = utils.cmd_str(*__CMD, params=__PARAMS)
 
@@ -27,7 +27,7 @@ Pls, provide subscriber name(s).
 """.format(CMD)
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 def subscription(c, session=None):
     cs_args = c.cs_command_args[2:]

@@ -195,7 +195,7 @@ def next_question(c, session, data):
     return c.result().wait(msg).interactive(data)
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 def report(c, session=None):
     try:

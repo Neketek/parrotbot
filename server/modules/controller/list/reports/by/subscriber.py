@@ -32,7 +32,7 @@ def no_subs_with_name(names):
     return no_names(NO_SUBS_WITH_NAME, names)
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):

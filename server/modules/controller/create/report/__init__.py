@@ -23,7 +23,7 @@ Error:
 """
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 def report(
     c
 ):

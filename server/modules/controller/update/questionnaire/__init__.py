@@ -20,7 +20,7 @@ Update stoped. Error:
 """
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):

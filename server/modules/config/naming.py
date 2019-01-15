@@ -6,7 +6,7 @@ class cddict(object):
         self.__data = dict(*args, **kwargs)
 
     def __getattr__(self, key):
-        return self.__data.get(key)
+        return self.__data[key]
 
 
 short = cddict(

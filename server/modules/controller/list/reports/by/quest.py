@@ -33,7 +33,7 @@ def no_quest_with_name(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def quest(c, session=None):

@@ -1,9 +1,5 @@
 from modules.controller.core import actions as a, Conditions as c
-
-
-@a.register(c.command('help'))
-def help(c):
-    return c.reply_and_wait("you'll not find here any help...")
+from . import help
 
 
 @a.register(c.default())

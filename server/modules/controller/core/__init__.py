@@ -58,7 +58,7 @@ class Context(object):
             self.i = Context.Interactive(*args, **kwargs)
             return self
 
-    def __init__(self, client, message=None, interactive=None):
+    def __init__(self, client, message=None, interactive=None, actions=None):
         message = dict() if message is None else message
         self.client = client
         self.client_msg_id = message.get('client_msg_id')
@@ -71,6 +71,7 @@ class Context(object):
         self.files = message.get('files', [])
         self.file = self.files[0] if len(self.files) > 0 else None
         self.i = interactive
+        self.actions = actions
 
     def load_file_request(self, slack_file=None):
         slack_file = self.file if slack_file is None else slack_file
@@ -176,6 +177,7 @@ class __Actions:
         self.interactive = dict()
         self.keep_alive_wait_msg = 180  # seconds
         self.channel_cmd_wait_msg = dict()
+        self.registered_cmd = []
         self.keep_alive_running_cmd = 60  # seconds
         self.channel_running_cmd = dict()
         self.threads = []
@@ -195,6 +197,14 @@ class __Actions:
         elif condition is Conditions.user_msg_edit():
             self.__user_msg_edit_handler = func
             return
+        else:
+            try:
+                cmd_str = condition.cmd_str
+                cmd_help = condition.cmd_help
+                if cmd_str:
+                    self.registered_cmd.append((cmd_str, cmd_help,))
+            except AttributeError:
+                pass
         for l in self.listeners:
             if l['func'] is func:
                 raise exc.DuplicateHandlerFunction(func)
@@ -423,7 +433,7 @@ class __Actions:
             return target['cmd']
 
     def __process_message(self, client, msg):
-        context = Context(client, msg)
+        context = Context(client, msg, actions=self)
         # logger.debug(printer.pformat(msg))
         if context.is_user_message:
             logger.debug(
@@ -460,14 +470,20 @@ class __Actions:
         self.__try_to_kill_interactive(client)
 
     def __str__(self):
-        res = "[\n"
+        res = "ACTIONS:\n[\n"
         for l in self.listeners:
-            res += " ({0}, {1})\n".format(
+            res += "\t({0}, {1})\n".format(
                 l['func'].__name__,
                 l['cond'].__name__
             )
-        res += ']'
+        res += ']\nCMD:\n[\n\n'
+        for cmd_str, cmd_help in self.registered_cmd:
+            res += "\nCMD:{}\nHELP:\n{}\n".format(cmd_str, cmd_help)
+        res += '\n]'
         return res
+
+
+actions = __Actions()
 
 
 class Conditions:
@@ -483,7 +499,7 @@ class Conditions:
         return Conditions.__user_msg_edit
 
     @staticmethod
-    def command(text, *args):
+    def command(text, *args, cmd_str=None, cmd_help=None):
         def condition(c):
             if len(c.command_args) < 1+len(args):
                 return False
@@ -498,11 +514,10 @@ class Conditions:
         if len(args) > 0:
             condition.__name__ += (" {}"*len(args)).format(*args)
         condition.__name__ += "'"
+        condition.cmd_str = cmd_str
+        condition.cmd_help = cmd_help
         return condition
 
     @staticmethod
     def default():
         return Conditions.__default_condition
-
-
-actions = __Actions()

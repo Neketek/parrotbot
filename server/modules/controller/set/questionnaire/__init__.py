@@ -37,7 +37,7 @@ def set_quest_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
-@a.register(c.command(*__CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):
