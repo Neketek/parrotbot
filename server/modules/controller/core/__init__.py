@@ -58,7 +58,7 @@ class Context(object):
             self.i = Context.Interactive(*args, **kwargs)
             return self
 
-    def __init__(self, client, message=None, interactive=None, actions=None):
+    def __init__(self, client, message=None, interactive=None):
         message = dict() if message is None else message
         self.client = client
         self.client_msg_id = message.get('client_msg_id')
@@ -71,7 +71,6 @@ class Context(object):
         self.files = message.get('files', [])
         self.file = self.files[0] if len(self.files) > 0 else None
         self.i = interactive
-        self.actions = actions
 
     def load_file_request(self, slack_file=None):
         slack_file = self.file if slack_file is None else slack_file
@@ -433,7 +432,7 @@ class __Actions:
             return target['cmd']
 
     def __process_message(self, client, msg):
-        context = Context(client, msg, actions=self)
+        context = Context(client, msg)
         # logger.debug(printer.pformat(msg))
         if context.is_user_message:
             logger.debug(
