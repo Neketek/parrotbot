@@ -66,7 +66,7 @@ def __unsafe_save(c, session, data):
                     )
             )
     questions = data['questions']
-    schedule = data['schedule']
+    schedule = data.get('schedule', [])
     subs = (
         session
         .query(sql.Subscriber)

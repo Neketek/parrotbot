@@ -15,7 +15,7 @@ Schedule:
 """
 
 
-def __list_to_str(l, format=str):
+def list_to_str(l, format=str):
     r = ''
     n = 1
     for i in l:
@@ -24,22 +24,26 @@ def __list_to_str(l, format=str):
     return r
 
 
+def schedule_list_to_str(l):
+    if not l:
+        return None
+    return list_to_str(
+        [
+            (
+                '{}-{} {}'.format(s['start'], s['end'], s['time'])
+            )
+            for s in l
+        ]
+    )
+
+
 def json_to_str(data):
     return DATA_STR_TEMPLATE.format(
         name=data['name'],
         title=data['title'],
         expiration=data.get('expiration', Questionnaire.NULL_EXPIRATION_STR),
         retention=data.get('retention', Questionnaire.DEFAULT_RETENTION),
-        questions=__list_to_str(data['questions']),
-        subscribers=__list_to_str(data['subscribers']),
-        schedule=__list_to_str(
-            [
-                (
-                    '{}-{}'.format(s['start'], s['end']),
-                    s['time'],
-                )
-                for s in data['schedule']
-            ],
-            format=lambda s: ' '.join(s)
-        )
+        questions=list_to_str(data['questions']),
+        subscribers=list_to_str(data['subscribers']),
+        schedule=schedule_list_to_str(data.get('schedue'))
     )

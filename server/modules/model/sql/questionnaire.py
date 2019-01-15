@@ -17,16 +17,19 @@ class Questionnaire(Base):
     active = Column(Boolean(), default=True, nullable=False)
     subscriptions = relationship(
         'Subscription',
-        back_populates='questionnaire'
+        back_populates='questionnaire',
+        cascade="all, delete-orphan"
     )
 
     questions = relationship(
         'Question',
-        back_populates='questionnaire'
+        back_populates='questionnaire',
+        cascade="all, delete-orphan"
     )
     schedule = relationship(
         'Schedule',
-        back_populates='questionnaire'
+        back_populates='questionnaire',
+        cascade="all, delete-orphan"
     )
 
     @staticmethod

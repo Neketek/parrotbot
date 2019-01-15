@@ -4,6 +4,8 @@ from .download_template import download_template
 from .save import save
 from modules.config.naming import short
 from modules.controller import permission
+from .schema import TemplateSchema
+from .json_to_str import json_to_str
 
 
 INITITAL_MSG = """
@@ -30,7 +32,7 @@ def quest(c, session=None):
         if c.i is None:
             return c.reply_and_wait(INITITAL_MSG).interactive('file')
         elif c.i.next == 'file':
-            return download_template(c)
+            return download_template(c, TemplateSchema, json_to_str)
         elif isinstance(c.i.next, dict):
             if c.command == 'yes':
                 return save(c, session, c.i.next)

@@ -1,12 +1,10 @@
-from .schema import TemplateSchema
 from marshmallow import ValidationError
 import json
 from requests import RequestException
-from .json_to_str import json_to_str
 
 
 SUCCESSFULL_REPLY_TEMPLATE = """
-Template file was loaded and parsed succesfully.
+File was loaded and parsed succesfully.
 Is everything below correct?
 {0}
 yes|no?
@@ -27,19 +25,19 @@ Reason:
 """
 
 INVALID_SCHEMA_ERROR = """
-Template schema is not valid.
+File schema is not valid.
 Reason:
 {0}
 """
 
 
-def download_template(c):
+def download_template(c, SchemaCls, json_to_str):
     try:
         if c.file is None:
             raise ValueError(NO_FILE_ERROR)
         c.reply('Loading the template file...')
         data = json.loads(c.load_file_request().content)
-        TemplateSchema().load(data)
+        SchemaCls().load(data)
         return c.reply_and_wait(
             SUCCESSFULL_REPLY_TEMPLATE.format(json_to_str(data))
         ).interactive(data)

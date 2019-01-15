@@ -8,6 +8,17 @@ from modules.model.sql import Questionnaire, Question, Subscriber
 from datetime import datetime
 
 
+def duplication_validator(value):
+    try:
+        v = value[0]
+    except IndexError:
+        return
+    if isinstance(v, dict):
+        value = [tuple(v.items()) for v in value]
+    if len(set(value)) != len(value):
+        raise ValidationError("Duplicates found")
+
+
 def time_str_validator(value):
     try:
         datetime.strptime(value, "%H:%M")
@@ -24,6 +35,21 @@ def gt_validator(lower_bound):
             )
 
 
+def validate_schedule_days_intersection(schedule):
+    days = [False]*7
+    for sch in schedule:
+        start = sch['start']
+        end = sch['end']
+        for i in range(start-1, end):
+            if days[i]:
+                raise ValidationError(
+                    'Day intervals intersection.',
+                    'schedule'
+                )
+            else:
+                days[i] = True
+
+
 class ScheduleSchema(Schema):
     start = f.Integer(validate=v.Range(min=1, max=7))
     end = f.Integer(validate=v.Range(min=1, max=7))
@@ -38,46 +64,70 @@ class ScheduleSchema(Schema):
             )
 
 
-def StrField(prop):
+def StrField(prop, *args, **kwargs):
     return f.Str(
         validate=v.Length(
             min=1,
             max=prop.property.columns[0].type.length
-        )
+        ),
+        *args,
+        **kwargs,
     )
+
+
+def SubscribersField(*args, **kwargs):
+    return f.List(
+        StrField(Subscriber.name),
+        validate=(v.Length(min=1), duplication_validator, ),
+        *args,
+        **kwargs
+    )
+
+
+def ScheduleField(*args, **kwargs):
+    return f.Nested(
+        ScheduleSchema,
+        many=True,
+        validate=duplication_validator,
+        *args,
+        **kwargs
+    )
+
+
+def QuestionsField(*args, **kwargs):
+    return f.List(
+        StrField(Question.text),
+        validate=(v.Length(min=1), duplication_validator, ),
+        *args,
+        **kwargs
+    )
+
+
+def RetentionField(*args, **kwargs):
+    return f.Integer(validate=gt_validator(1), required=False)
+
+
+def ExpirationField(*args, **kwargs):
+    return f.Str(validate=time_str_validator, required=False, *args, **kwargs)
+
+
+def TitleField(*args, **kwargs):
+    return StrField(Questionnaire.name, *args, **kwargs)
+
+
+def NameField(*args, **kwargs):
+    return StrField(Questionnaire.title, *args, **kwargs)
 
 
 class TemplateSchema(Schema):
-    name = StrField(Questionnaire.name)
-    title = StrField(Questionnaire.title)
-    expiration = f.Str(validate=time_str_validator, required=False)
-    retention = f.Integer(validate=gt_validator(1), required=False)
-    questions = f.List(
-        StrField(Question.text),
-        validate=v.Length(min=1)
-    )
-    subscribers = f.List(
-        StrField(Subscriber.name),
-        validate=v.Length(min=1)
-    )
-
-    schedule = f.Nested(ScheduleSchema, many=True)
+    name = NameField()
+    title = TitleField()
+    expiration = ExpirationField()
+    retention = RetentionField()
+    questions = QuestionsField()
+    subscribers = SubscribersField()
+    schedule = ScheduleField(required=False)
 
     @validates_schema
     def __validate_schema(self, data):
-        schedule = data['schedule']
-        duplicated = 0
-        for s in schedule:
-            for ds in schedule:
-                if ds == s:
-                    duplicated += 1
-                if duplicated > 1:
-                    raise ValidationError(
-                        'Schedule has duplicates',
-                        'schedule'
-                    )
-            duplicated = 0
-        if len(set(data['questions'])) < len(data['questions']):
-            raise ValidationError('Questions has duplicated', 'questions')
-        if len(set(data['subscribers'])) < len(data['subscribers']):
-            raise ValidationError('Subscribers has duplicated', 'subscribers')
+        validate_schedule_days_intersection(data.get('schedule'))
