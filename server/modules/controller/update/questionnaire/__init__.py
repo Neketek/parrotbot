@@ -7,6 +7,12 @@ from modules.controller.create.questionnaire.download_template import\
 from .schema import TemplateSchema
 from .json_to_str import json_to_str
 from .save import save
+from modules.controller.core import utils
+
+
+__CMD = (short.method.update, short.name.questionnaire,)
+
+CMD = utils.cmd_str(*__CMD)
 
 ERROR = """
 Update stoped. Error:
@@ -14,7 +20,7 @@ Update stoped. Error:
 """
 
 
-@a.register(c.command(short.method.update, short.name.questionnaire))
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):
@@ -31,6 +37,8 @@ def questionnaire(c, session=None):
                 c.reply("Updating questionnaire...")
             elif c.command == 'no':
                 return c.reply_and_wait('Update canceled.')
+            else:
+                return c.reply_and_wait('yes|no?').interactive(c.i.next)
             return save(c, session)
     except ValueError as e:
         return c.reply_and_wait(ERROR.format(e))

@@ -3,11 +3,19 @@ from modules.controller.core import actions as a, Conditions as c
 from modules.config.naming import short
 from sqlalchemy.orm import exc as orme
 from modules.model import sql
+from modules.controller.core import utils
 
+__CMD = (short.method.create, short.name.subscription,)
+__PARAMS = [
+    "{}_name".format(short.questionnaire),
+    "{}_name".format(short.subscriber)
+]
+CMD = utils.cmd_str(*__CMD, params=__PARAMS)
 
 NO_QUEST_NAME = """
 Pls, provide questionnaire name.
-"""
+{}
+""".format(CMD)
 
 NO_QUEST_WITH_NAME = """
 Questionnaire {} not found.
@@ -15,10 +23,11 @@ Questionnaire {} not found.
 
 NO_SUB_NAMES = """
 Pls, provide subscriber name(s).
-"""
+{}
+""".format(CMD)
 
 
-@a.register(c.command(short.method.create, short.name.subscription))
+@a.register(c.command(*__CMD))
 @sql.session()
 def subscription(c, session=None):
     cs_args = c.cs_command_args[2:]

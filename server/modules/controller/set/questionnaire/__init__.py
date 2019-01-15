@@ -5,10 +5,10 @@ from ..common import labels as lb, checks as ch
 # from sqlalchemy.orm import exc as orme
 from modules.config.naming import short
 from modules.controller import permission
+from modules.controller.core import utils
 
-COMMAND = """
-`set quest <param> <value> <name,...>`
-"""
+__CMD = (short.method.set, short.name.questionnaire,)
+CMD = utils.cmd_str(*__CMD, params=['param', 'value', 'name,...'])
 
 
 def get_quest_by_name(session, names):
@@ -37,27 +37,27 @@ def set_quest_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
-@a.register(c.command(short.method.set, short.name.questionnaire))
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
-def quest(c, session=None):
+def questionnaire(c, session=None):
     cs_args = c.cs_command_args[2:]
     args = c.command_args[2:]
     try:
         param = args[0]
     except IndexError:
-        return c.reply_and_wait(lb.no_param(COMMAND))
+        return c.reply_and_wait(lb.no_param(CMD))
     try:
         value = args[1]
     except IndexError:
-        return c.reply_and_wait(lb.no_value(COMMAND))
+        return c.reply_and_wait(lb.no_value(CMD))
     names = cs_args[2:]
     if len(names) == 0:
-        return c.reply_and_wait(lb.no_name(COMMAND))
+        return c.reply_and_wait(lb.no_name(CMD))
     try:
         if param == 'active':
             set_quest_active(c, session, names, value)
         else:
-            return c.reply_and_wait(lb.unknown_param_name(COMMAND))
+            return c.reply_and_wait(lb.unknown_param_name(CMD))
     except ValueError as e:
         return c.reply_and_wait(str(e))

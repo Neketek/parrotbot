@@ -3,13 +3,21 @@ from modules.model import sql
 from modules.config.naming import short
 from modules.controller.set.common.checks import compare_found_expected
 from modules.controller import permission
+from modules.controller.core import utils
 
+__CMD = (short.method.delete, short.name.questionnaire,)
+CMD = utils.cmd_str(
+    *__CMD,
+    params=[
+        "{}_name,...".format(short.name.questionnaire)
+    ]
+)
 NO_QUEST_NAMES = """
 Pls, provide questionnaire name(s).
 """
 
 
-@a.register(c.command(short.method.delete, short.name.questionnaire))
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):

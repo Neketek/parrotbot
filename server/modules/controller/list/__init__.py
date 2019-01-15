@@ -3,6 +3,7 @@ from modules.config.naming import short
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
 from modules.controller import permission
+from modules.controller.core import utils
 from . import reports
 
 
@@ -11,11 +12,16 @@ Pls, provide questionnaire name.
 """
 
 NO_QUEST_WITH_NAME = """
-Can't find questionnaire "{0}".
+Can't find questionnaire *{0}*.
 """
 
+__CMD = dict()
+CMD = dict()
+__CMD[short.name.question] = (short.method.list, short.name.question, )
+CMD[short.name.question] = utils.cmd_str(*__CMD[short.name.question])
 
-@a.register(c.command(short.method.list, short.name.question))
+
+@a.register(c.command(*__CMD[short.name.question]))
 @sql.session()
 @permission.admin()
 def question(c, session=None):
@@ -39,7 +45,14 @@ def question(c, session=None):
     return c.reply_and_wait(result)
 
 
-@a.register(c.command(short.method.list, short.name.questionnaire))
+__CMD[short.name.questionnaire] = (
+    short.method.list,
+    short.name.questionnaire,
+)
+CMD[short.name.questionnaire] = utils.cmd_str(*__CMD[short.name.questionnaire])
+
+
+@a.register(c.command(*__CMD[short.name.questionnaire]))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):
@@ -53,7 +66,11 @@ def questionnaire(c, session=None):
     )
 
 
-@a.register(c.command(short.method.list, short.name.subscriber))
+__CMD[short.name.subscriber] = (short.method.list, short.name.subscriber, )
+CMD[short.name.subscriber] = utils.cmd_str(*__CMD[short.name.subscriber])
+
+
+@a.register(c.command(*__CMD[short.name.subscriber]))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):
@@ -73,7 +90,16 @@ def subscriber(c, session=None):
     )
 
 
-@a.register(c.command(short.method.list, short.name.subscription))
+__CMD[short.name.subscription] = (short.method.list, short.name.subscription, )
+CMD[short.name.subscription] = utils.cmd_str(
+    *__CMD[short.name.subscription],
+    params=[
+        "{}_name".format(short.name.questionnaire)
+    ]
+)
+
+
+@a.register(c.command(*__CMD[short.name.subscription]))
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):

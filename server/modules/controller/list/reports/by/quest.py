@@ -7,14 +7,21 @@ from .common import reply_msg_attachments, get_channel_sub
 from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 from modules.controller import permission
+from modules.controller.core import utils
 
-COMMAND = "`ls reports quest <days> <name,...>`"
+
+__CMD = (short.method.list, short.name.report, short.name.questionnaire, )
+__PARAMS = [
+    short.param.days,
+    "{}_name,...".format(short.name.questionnaire)
+]
+CMD = utils.cmd_str(*__CMD)
 
 
 NO_QUEST_NAME = """
 Pls, provide questionnaire name(s).
 {}
-""".format(COMMAND)
+""".format(CMD)
 
 NO_QUEST_WITH_NAME = """
 Questionnaire(s) not found:
@@ -26,13 +33,7 @@ def no_quest_with_name(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
-@a.register(
-    c.command(
-        short.method.list,
-        short.name.report,
-        short.name.questionnaire
-    )
-)
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
 def quest(c, session=None):
@@ -40,12 +41,12 @@ def quest(c, session=None):
     cs_args = c.cs_command_args
     if len(args) < 5:
         if len(args) < 4:
-            return c.reply_and_wait(no_days_range(COMMAND))
+            return c.reply_and_wait(no_days_range(CMD))
         return c.reply_and_wait(NO_QUEST_NAME)
     try:
         days = int(args[3])
     except ValueError:
-        return c.reply_and_wait(days_range_is_not_int(COMMAND))
+        return c.reply_and_wait(days_range_is_not_int(CMD))
     names = cs_args[4:]
     try:
         sub = get_channel_sub(c, session)

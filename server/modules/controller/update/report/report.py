@@ -5,7 +5,10 @@ from sqlalchemy import and_
 from sqlalchemy.orm import exc as orme
 from pytz import timezone
 from modules.config.naming import short
+from modules.controller.core import utils
 
+__CMD = (short.method.update, short.name.report,)
+CMD = utils.cmd_str(*__CMD)
 
 NO_REPORTS = """
 You have no pending reports.
@@ -192,7 +195,7 @@ def next_question(c, session, data):
     return c.result().wait(msg).interactive(data)
 
 
-@a.register(c.command(short.method.update, short.name.report))
+@a.register(c.command(*__CMD))
 @sql.session()
 def report(c, session=None):
     try:

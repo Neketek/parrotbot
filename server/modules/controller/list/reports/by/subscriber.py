@@ -7,20 +7,20 @@ from .common import reply_msg_attachments, get_channel_sub
 from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 from modules.controller import permission
+from modules.controller.core import utils
 
 
-COMMAND = "`{} {} {} <{}> <{},...>`".format(
-    short.method.ls,
-    short.name.report,
-    short.name.subscriber,
+__CMD = (short.method.list, short.name.report, short.name.subscriber, )
+__PARAMS = [
     short.param.days,
-    'subscriber'
-)
+    "{}_name".format(short.name.subscriber)
+]
+CMD = utils.cmd_str(*__CMD, params=__PARAMS)
 
 NO_SUB_NAMES = """
 Pls, provide subscriber name(s)
 {}
-""".format(COMMAND)
+""".format(CMD)
 
 NO_SUBS_WITH_NAME = """
 Subscriber(s) not found:
@@ -32,26 +32,20 @@ def no_subs_with_name(names):
     return no_names(NO_SUBS_WITH_NAME, names)
 
 
-@a.register(
-    c.command(
-        short.method.list,
-        short.name.report,
-        short.name.subscriber
-    )
-)
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):
     args = c.command_args
     cs_args = c.cs_command_args
     if len(args) < 4:
-        return c.reply_and_wait(no_days_range(COMMAND))
+        return c.reply_and_wait(no_days_range(CMD))
     if len(args) < 5:
         return c.reply_and_wait(NO_SUB_NAMES)
     try:
         days = int(c.command_args[3])
     except ValueError:
-        return c.reply_and_wait(days_range_is_not_int(COMMAND))
+        return c.reply_and_wait(days_range_is_not_int(CMD))
     try:
         sub = get_channel_sub(c, session)
     except ValueError as e:

@@ -1,19 +1,29 @@
 from modules.controller.core import actions as a, Conditions as c
 from .request_report import request_report
 from modules.config.naming import short
+from modules.controller.core import utils
+
+
+__CMD = (short.method.create, short.name.report,)
+__PARAMS = [
+    "{}_name".format(short.name.questionnaire)
+]
+CMD = utils.cmd_str(*__CMD, params=__PARAMS)
+
+
 NO_TITLE = """
 Pls, provide questionnaire name.
-Ex. create report <name>.
-"""
+{}
+""".format(CMD)
 
 ERROR = """
 Can create reports.
 Error:
-{0}
+{}
 """
 
 
-@a.register(c.command(short.method.create, short.name.report))
+@a.register(c.command(*__CMD))
 def report(
     c
 ):

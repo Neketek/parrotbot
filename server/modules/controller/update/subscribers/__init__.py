@@ -3,7 +3,10 @@ from modules.model import sql
 from .update_subscribers import update_subscribers
 from modules.config.naming import short
 from modules.controller import permission
+from modules.controller.core import utils
 
+__CMD = (short.method.update, short.name.subscriber,)
+CMD = utils.cmd_str(*__CMD)
 
 ERROR = """
 Can't update subscribers.
@@ -21,7 +24,7 @@ Updating subscribers cache...
 """
 
 
-@a.register(c.command(short.method.update, short.name.subscriber))
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin(allow_when_no_subs=True)
 def subscribers(c, session=None):

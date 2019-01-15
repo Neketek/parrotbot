@@ -4,10 +4,19 @@ from modules.controller.set.common.checks import compare_found_expected
 from modules.config.naming import short
 from sqlalchemy.orm import exc as orme
 from modules.controller import permission
+from modules.controller.core import utils
+
+__CMD = (short.method.delete, short.name.subscription,)
+__PARAMS = [
+    "{}_name".format(short.name.questionnaire),
+    "{}_name".format(short.name.subcriber)
+]
+CMD = utils.cmd_str(*__CMD, params=__PARAMS)
 
 NO_QUEST_NAME = """
 Pls, provide questionnaire name.
-"""
+{}
+""".format(CMD)
 
 NO_QUEST_WITH_NAME = """
 Questionnaire {} not found.
@@ -15,10 +24,11 @@ Questionnaire {} not found.
 
 NO_SUB_NAMES = """
 Pls, provide subscriber names(s).
-"""
+{}
+""".format(CMD)
 
 
-@a.register(c.command(short.method.delete, short.name.subscription))
+@a.register(c.command(*__CMD))
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):
