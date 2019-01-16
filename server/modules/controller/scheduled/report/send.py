@@ -1,10 +1,14 @@
 from .constant import REPORT_REQUEST_MSG_FORMAT, TIME_FORMAT
 from datetime import datetime, timedelta
 from modules.controller.core.time import \
-    get_utcnow, get_relative_shifted_date_start
+    get_relative_shifted_date_start
+from modules.controller.core import exc as cexc
 from pytz import timezone
 from modules.model import sql
+import logging
 import json
+
+logger = logging.getLogger(__name__)
 
 
 def __get_or_create(t, k, d):
@@ -111,4 +115,7 @@ def send(c, session, plan, utcnow):
     session.commit()
     for msg, channels in msgs:
         for ch in channels:
-            c.send(ch, msg)
+            try:
+                c.send(ch, msg)
+            except cexc.SlackAPICallException as e:
+                logger.error(str(e))
