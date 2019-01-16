@@ -4,7 +4,7 @@ import os
 class __Config(object):
     @property
     def BOT_TOKEN(self):
-        return 'xoxb-500317872951-499466546965-qMTNRy4E45lCcxHcryEkOv4v'
+        return os.environ.get('BOT_TOKEN', '')
 
     @property
     def DEBUG(self):

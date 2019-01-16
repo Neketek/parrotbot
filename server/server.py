@@ -11,7 +11,6 @@ def start():
     from modules.model import sql
     import threading
     client = SlackClient(envconf.BOT_TOKEN)
-    print(actions)
     sql.create_all()
     if client.rtm_connect():
         Manager(client).start(threading.current_thread())
@@ -20,7 +19,7 @@ def start():
             actions.feed(client, messages, envconf.DEBUG)
             time.sleep(1)
     else:
-        print("Can't connect to slack")
+        print("Can't connect to Slack. BOT_TOKEN", envconf.BOT_TOKEN)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  server:
+    container_name: parrotbot-server
+    image: parrotbot:lastest
+    build:
+      dockerfile: Dockerfile
+      context: ./server
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env

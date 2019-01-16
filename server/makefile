@@ -1,5 +1,5 @@
 .PHONY: all
-all: rmdb dsrun
+all:
 
 .PHONY: rmdb
 rmdb:
@@ -12,3 +12,11 @@ srun:
 .PHONY: dsrun
 dsrun:
 	DEBUG=true python server.py
+
+.PHONY: udignore
+udignore:
+	cat .gitignore > .dockerignore
+
+.PHONY: pfreeze
+pfreeze:
+	pip freeze -l > requirements.txt
