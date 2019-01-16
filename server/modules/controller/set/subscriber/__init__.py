@@ -6,6 +6,7 @@ from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.set, short.name.subscriber,)
 CMD = utils.cmd_str(*__CMD, params=['param', 'value', 'name,...'])
@@ -34,6 +35,7 @@ def set_subs_active(c, session, names, value):
         s.active = value
         session.add(s)
     session.commit()
+    plan.update(session)
     return c.reply_and_wait("Done.")
 
 

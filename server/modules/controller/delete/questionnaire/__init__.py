@@ -5,6 +5,7 @@ from modules.controller.set.common.checks import compare_found_expected
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.delete, short.name.questionnaire,)
 CMD = utils.cmd_str(
@@ -42,6 +43,7 @@ def questionnaire(c, session=None):
         return c.reply_and_wait(e)
     quests_query.delete(synchronize_session=False)
     session.commit()
+    plan.update(session)
     return c.reply_and_wait(
         'Done. {} questionnaire(s) deleted.'
         .format(len(names))

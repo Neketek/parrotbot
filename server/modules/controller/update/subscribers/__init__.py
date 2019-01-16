@@ -5,6 +5,7 @@ from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.update, short.name.subscriber,)
 CMD = utils.cmd_str(*__CMD)
@@ -33,6 +34,7 @@ def subscribers(c, session=None):
         c.reply(INITIAL, code_block=True)
         update_subscribers(c, session)
         session.commit()
+        plan.update(session)
         subs = session\
             .query(sql.Subscriber)\
             .all()

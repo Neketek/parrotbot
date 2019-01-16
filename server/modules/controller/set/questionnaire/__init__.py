@@ -7,6 +7,7 @@ from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.set, short.name.questionnaire,)
 CMD = utils.cmd_str(*__CMD, params=['param', 'value', 'name,...'])
@@ -35,6 +36,7 @@ def set_quest_active(c, session, names, value):
         q.active = value
         session.add(q)
     session.commit()
+    plan.update(session)
     return c.reply_and_wait("Done.")
 
 
@@ -57,7 +59,7 @@ def questionnaire(c, session=None):
         return c.reply_and_wait(lb.no_name(CMD))
     try:
         if param == 'active':
-            set_quest_active(c, session, names, value)
+            return set_quest_active(c, session, names, value)
         else:
             return c.reply_and_wait(lb.unknown_param_name(CMD))
     except ValueError as e:

@@ -2,6 +2,7 @@ from modules.model import sql
 from sqlalchemy import not_
 from sqlalchemy.orm import exc as orme
 from datetime import datetime
+from modules.controller.scheduled.report import plan
 import json
 
 
@@ -94,4 +95,5 @@ def __unsafe_save(c, session, data):
 def save(c, session, data):
     c.reply("Saving questionnaire to db...")
     __unsafe_save(c, session, data)
+    plan.update(session)
     return c.reply_and_wait(SUCCESS.format(data['title']))

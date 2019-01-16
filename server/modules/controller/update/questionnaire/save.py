@@ -1,6 +1,7 @@
 from modules.model import sql
 from sqlalchemy.orm import exc as orme
 from datetime import datetime
+from modules.controller.scheduled.report import plan
 
 
 def save(c, session):
@@ -73,4 +74,5 @@ def save(c, session):
         pass
     session.add(quest)
     session.commit()
+    plan.update(session)
     return c.reply_and_wait('Done.')

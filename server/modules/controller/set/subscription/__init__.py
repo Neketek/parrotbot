@@ -7,6 +7,8 @@ from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
+
 
 __QUEST = short.name.questionnaire
 __SUB = short.name.subscriber
@@ -72,7 +74,8 @@ def set_subscrs_active(c, session, subscrs, value):
         s.active = value
         session.add(s)
     session.commit()
-    c.reply_and_wait("Done.")
+    plan.update(session)
+    return c.reply_and_wait("Done.")
 
 
 __PARAM_SETTERS = dict(

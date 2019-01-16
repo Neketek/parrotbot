@@ -5,6 +5,7 @@ from sqlalchemy.orm import exc as orme
 from modules.model import sql
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.create, short.name.subscription,)
 __PARAMS = [
@@ -82,6 +83,7 @@ def subscription(c, session=None):
             )
         )
     session.commit()
+    plan.update(session)
     return c.reply_and_wait(
         "Done. Added {} new subscription(s). {} already exist(s)"
         .format(len(non_existing), len(existing))

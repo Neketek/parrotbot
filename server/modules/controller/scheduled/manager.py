@@ -63,7 +63,12 @@ class Manager(object):
         thread.start()
 
     def tick(self):
-        now = t.get_utcnow()
+        # now = t.get_utcnow()
+        now = t.get_utcnow().replace(
+            day=8,
+            hour=18,
+            minute=0
+        )
         if self.is_next_minute(now):
             self.last_minute_call = now
             self.send_reports(now)

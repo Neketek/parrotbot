@@ -6,6 +6,7 @@ from sqlalchemy.orm import exc as orme
 from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
+from modules.controller.scheduled.report import plan
 
 __CMD = (short.method.delete, short.name.subscription,)
 __PARAMS = [
@@ -72,6 +73,7 @@ def subscription(c, session=None):
     for s in subscrs:
         session.delete(s)
     session.commit()
+    plan.update(session)
     return c.reply_and_wait(
         "Done. {} subscription(s) removed from {} questionnaire"
         .format(len(sub_names), quest_name)
