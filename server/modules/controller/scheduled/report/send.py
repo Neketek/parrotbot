@@ -81,7 +81,7 @@ def send(c, session, plan, utcnow):
     # empty dict evaluates as false, here is small optimization
     if not report_requests:
         return
-    __dump_to_file("report_requests.json", report_requests)
+    # __dump_to_file("report_requests.json", report_requests)
     msgs = []
     reports = []
     for qid, request in report_requests.items():
@@ -110,7 +110,7 @@ def send(c, session, plan, utcnow):
                 )
                 channels.append(channel)
             msgs.append((msg, channels,))
-    __dump_to_file("msgs.json", msgs)
+    # __dump_to_file("msgs.json", msgs)
     session.bulk_save_objects(reports)
     session.commit()
     for msg, channels in msgs:
