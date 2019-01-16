@@ -58,7 +58,7 @@ def save(c, session):
             sql.Schedule(
                 start=sch['start'],
                 end=sch['end'],
-                time=datetime.time.strftime(sch['time'], "%H:%M")
+                time=datetime.strptime(sch['time'], "%H:%M").time()
             )
             for sch in schedule
         ]

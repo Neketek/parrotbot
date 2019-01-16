@@ -104,11 +104,11 @@ def QuestionsField(*args, **kwargs):
 
 
 def RetentionField(*args, **kwargs):
-    return f.Integer(validate=gt_validator(1), required=False)
+    return f.Integer(validate=gt_validator(1))
 
 
 def ExpirationField(*args, **kwargs):
-    return f.Str(validate=time_str_validator, required=False, *args, **kwargs)
+    return f.Str(validate=time_str_validator, *args, **kwargs)
 
 
 def TitleField(*args, **kwargs):
@@ -120,12 +120,12 @@ def NameField(*args, **kwargs):
 
 
 class TemplateSchema(Schema):
-    name = NameField()
-    title = TitleField()
+    name = NameField(required=True)
+    title = TitleField(required=True)
     expiration = ExpirationField()
     retention = RetentionField()
-    questions = QuestionsField()
-    subscribers = SubscribersField()
+    questions = QuestionsField(required=True)
+    subscribers = SubscribersField(required=True)
     schedule = ScheduleField(required=False)
 
     @validates_schema

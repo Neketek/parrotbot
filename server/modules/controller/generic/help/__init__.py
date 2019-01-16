@@ -50,10 +50,10 @@ def help(c):
         try:
             selected = int(c.command)
         except ValueError:
-            if c.command == '.stop':
+            if c.text == '.stop':
                 return c.reply_and_wait('Stopped.')
             return (
-                c.reply_and_wait(NOT_NUMBER.format(c.i.command))
+                c.reply_and_wait(NOT_NUMBER.format(c.text))
                 .interactive('select')
             )
         try:

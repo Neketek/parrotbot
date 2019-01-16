@@ -43,6 +43,8 @@ def get_quests_schedule(session):
         # BEGIN: creating quest.id->tz->[(subscr.id, subscriber.channel_id)]
         quest_tz = dict()
         for subscr in q.subscriptions:
+            if not subscr.active:
+                continue
             sub = subs.get(subscr.subscriber_id)
             quest_tz_subscr = __get_or_create(quest_tz, sub['tz'], [])
             quest_tz_subscr.append((subscr.id, sub['channel'],))

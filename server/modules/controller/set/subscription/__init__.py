@@ -22,7 +22,7 @@ __CMD[__QUEST] = (
 __CMD[__SUB] = (
     short.method.set,
     short.name.subscription,
-    short.name.questionnaire,
+    short.name.subscriber,
 )
 
 

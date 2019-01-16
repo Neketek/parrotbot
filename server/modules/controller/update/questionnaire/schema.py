@@ -3,10 +3,10 @@ from marshmallow import Schema, validates_schema
 
 
 class TemplateSchema(Schema):
-    name = cschema.NameField()
+    name = cschema.NameField(required=True)
     title = cschema.TitleField(required=False)
-    expiration = cschema.ExpirationField()
-    retention = cschema.RetentionField()
+    expiration = cschema.ExpirationField(required=False)
+    retention = cschema.RetentionField(required=False)
     subscribers = cschema.SubscribersField(required=False)
     schedule = cschema.ScheduleField(required=False)
 
