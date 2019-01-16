@@ -4,6 +4,7 @@ from modules.config.naming import short
 from sqlalchemy.orm import exc as orme
 from modules.model import sql
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.create, short.name.subscription,)
 __PARAMS = [
@@ -27,7 +28,7 @@ Pls, provide subscriber name(s).
 """.format(CMD)
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 def subscription(c, session=None):
     cs_args = c.cs_command_args[2:]

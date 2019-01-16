@@ -6,6 +6,7 @@ from ..common import labels as lb, checks as ch
 from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __QUEST = short.name.questionnaire
 __SUB = short.name.subscriber
@@ -169,8 +170,20 @@ def __get_subs_sub_mode(c, session):
     return subscrs, setter, value
 
 
-@a.register(c.command(*__CMD[__SUB], cmd_str=CMD[__SUB]))
-@a.register(c.command(*__CMD[__QUEST], cmd_str=CMD[__QUEST]))
+@a.register(
+    c.command(
+        *__CMD[__SUB],
+        cmd_str=CMD[__SUB],
+        cmd_help=HTEXT[__SUB]
+    )
+)
+@a.register(
+    c.command(
+        *__CMD[__QUEST],
+        cmd_str=CMD[__QUEST],
+        cmd_help=HTEXT[__QUEST]
+    )
+)
 @sql.session()
 @permission.admin()
 def subscription(c, session=None):

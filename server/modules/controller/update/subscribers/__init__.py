@@ -4,6 +4,7 @@ from .update_subscribers import update_subscribers
 from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.update, short.name.subscriber,)
 CMD = utils.cmd_str(*__CMD)
@@ -24,7 +25,7 @@ Updating subscribers cache...
 """
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin(allow_when_no_subs=True)
 def subscribers(c, session=None):

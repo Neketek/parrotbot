@@ -6,6 +6,7 @@ from sqlalchemy.orm import exc as orme
 from pytz import timezone
 from modules.config.naming import short
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.update, short.name.report,)
 CMD = utils.cmd_str(*__CMD)
@@ -195,7 +196,7 @@ def next_question(c, session, data):
     return c.result().wait(msg).interactive(data)
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 def report(c, session=None):
     try:

@@ -2,6 +2,7 @@ from modules.controller.core import actions as a, Conditions as c
 from .request_report import request_report
 from modules.config.naming import short
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 
 __CMD = (short.method.create, short.name.report,)
@@ -23,7 +24,7 @@ Error:
 """
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 def report(
     c
 ):

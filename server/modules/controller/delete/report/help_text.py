@@ -1,0 +1,3 @@
+TEXT = """
+Delete specified reports.
+"""

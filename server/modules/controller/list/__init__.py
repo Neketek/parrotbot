@@ -4,6 +4,7 @@ from modules.model import sql
 from sqlalchemy.orm import exc as orme
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 from . import reports
 
 
@@ -24,7 +25,8 @@ CMD[short.name.question] = utils.cmd_str(*__CMD[short.name.question])
 @a.register(
     c.command(
         *__CMD[short.name.question],
-        cmd_str=CMD[short.name.question]
+        cmd_str=CMD[short.name.question],
+        cmd_help=HTEXT[short.name.question]
     )
 )
 @sql.session()
@@ -60,7 +62,8 @@ CMD[short.name.questionnaire] = utils.cmd_str(*__CMD[short.name.questionnaire])
 @a.register(
     c.command(
         *__CMD[short.name.questionnaire],
-        cmd_str=CMD[short.name.questionnaire]
+        cmd_str=CMD[short.name.questionnaire],
+        cmd_help=HTEXT[short.name.questionnaire]
     )
 )
 @sql.session()
@@ -83,7 +86,8 @@ CMD[short.name.subscriber] = utils.cmd_str(*__CMD[short.name.subscriber])
 @a.register(
     c.command(
         *__CMD[short.name.subscriber],
-        cmd_str=CMD[short.name.subscriber]
+        cmd_str=CMD[short.name.subscriber],
+        cmd_help=HTEXT[short.name.subscriber]
     )
 )
 @sql.session()
@@ -117,7 +121,8 @@ CMD[short.name.subscription] = utils.cmd_str(
 @a.register(
     c.command(
         *__CMD[short.name.subscription],
-        cmd_str=CMD[short.name.subscription]
+        cmd_str=CMD[short.name.subscription],
+        cmd_help=HTEXT[short.name.subscription]
     )
 )
 @sql.session()

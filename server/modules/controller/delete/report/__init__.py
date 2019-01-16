@@ -4,6 +4,7 @@ from modules.config.naming import short
 from modules.controller.set.common.checks import compare_found_expected
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.delete, short.name.report,)
 __PARAMS = [
@@ -17,7 +18,7 @@ Pls, provide id(s).
 """.format(CMD)
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin()
 def report(c, session=None):

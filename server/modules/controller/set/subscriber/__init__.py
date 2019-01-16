@@ -5,6 +5,7 @@ from ..common import labels as lb, checks as ch
 from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.set, short.name.subscriber,)
 CMD = utils.cmd_str(*__CMD, params=['param', 'value', 'name,...'])
@@ -36,7 +37,7 @@ def set_subs_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
-def set_subs_bot_active(c, session, names, value):
+def set_subs_bot_admin(c, session, names, value):
     value = p.Str.bool(value)
     subs = get_subs_by_name(session, names)
     for s in subs:
@@ -46,7 +47,7 @@ def set_subs_bot_active(c, session, names, value):
     return c.reply_and_wait("Done.")
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):
@@ -67,7 +68,7 @@ def subscriber(c, session=None):
         if param == 'active':
             return set_subs_active(c, session, names, value)
         if param == 'bot_admin':
-            return set_subs_bot_active(c, session, names, value)
+            return set_subs_bot_admin(c, session, names, value)
         else:
             return c.reply_and_wait(lb.unknown_param_name(CMD))
     except ValueError as e:

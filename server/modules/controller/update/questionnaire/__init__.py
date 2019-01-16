@@ -8,7 +8,7 @@ from .schema import TemplateSchema
 from .json_to_str import json_to_str
 from .save import save
 from modules.controller.core import utils
-
+from .help_text import TEXT as HTEXT
 
 __CMD = (short.method.update, short.name.questionnaire,)
 
@@ -20,7 +20,7 @@ Update stoped. Error:
 """
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin()
 def questionnaire(c, session=None):

@@ -8,6 +8,7 @@ from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
+from .help_text import TEXT_BY_QUEST as HTEXT
 
 
 __CMD = (short.method.list, short.name.report, short.name.questionnaire, )
@@ -33,7 +34,7 @@ def no_quest_with_name(titles):
     return no_names(NO_QUEST_WITH_NAME, titles)
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin()
 def quest(c, session=None):

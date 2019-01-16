@@ -8,7 +8,7 @@ from .common.labels import no_days_range, days_range_is_not_int, no_names
 from modules.config.naming import short
 from modules.controller import permission
 from modules.controller.core import utils
-
+from .help_text import TEXT_BY_SUB as HTEXT
 
 __CMD = (short.method.list, short.name.report, short.name.subscriber, )
 __PARAMS = [
@@ -32,7 +32,7 @@ def no_subs_with_name(names):
     return no_names(NO_SUBS_WITH_NAME, names)
 
 
-@a.register(c.command(*__CMD, cmd_str=CMD))
+@a.register(c.command(*__CMD, cmd_str=CMD, cmd_help=HTEXT))
 @sql.session()
 @permission.admin()
 def subscriber(c, session=None):
