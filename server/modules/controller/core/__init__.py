@@ -2,15 +2,13 @@ from pprint import PrettyPrinter
 import requests
 from datetime import datetime
 import threading
-import logging
+from modules.logger import root as logger
 from . import exc
 
 
 DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
 
 printer = PrettyPrinter(indent=4)
-
-logger = logging.getLogger('server')
 
 
 class Context(object):

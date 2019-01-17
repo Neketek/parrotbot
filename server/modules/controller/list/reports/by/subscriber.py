@@ -12,7 +12,7 @@ from .help_text import TEXT_BY_SUB as HTEXT
 
 __CMD = (short.method.list, short.name.report, short.name.subscriber, )
 __PARAMS = [
-    short.param.days,
+    short.param.max_age_days,
     "{}_name".format(short.name.subscriber)
 ]
 CMD = utils.cmd_str(*__CMD, params=__PARAMS)

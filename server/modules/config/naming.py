@@ -25,6 +25,6 @@ short = cddict(
         delete='delete'
     ),
     param=cddict(
-        days='days'
+        max_age_days='max_age_days'
     )
 )

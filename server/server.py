@@ -3,16 +3,14 @@ monkey.patch_all()
 
 
 def start():
-    import logging
     import time
     from slackclient import SlackClient
     from modules.config.env import config as envconf
     from modules.controller.core import actions
     from modules.controller.scheduled.manager import Manager
     from modules.model import sql
+    from modules.logger import root as logger
     import threading
-    logger = logging.getLogger('server')
-    logger.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
     sql.create_all()
     client = SlackClient(envconf.BOT_TOKEN)
     if client.rtm_connect():

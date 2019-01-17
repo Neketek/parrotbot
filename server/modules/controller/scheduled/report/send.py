@@ -5,10 +5,9 @@ from modules.controller.core.time import \
 from modules.controller.core import exc as cexc
 from pytz import timezone
 from modules.model import sql
-import logging
 import json
+from modules.logger import root as logger
 
-logger = logging.getLogger('server')
 
 
 def __get_or_create(t, k, d):

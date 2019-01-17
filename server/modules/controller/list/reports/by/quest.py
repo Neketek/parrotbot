@@ -13,7 +13,7 @@ from .help_text import TEXT_BY_QUEST as HTEXT
 
 __CMD = (short.method.list, short.name.report, short.name.questionnaire, )
 __PARAMS = [
-    short.param.days,
+    short.param.max_age_days,
     "{}_name,...".format(short.name.questionnaire)
 ]
 CMD = utils.cmd_str(*__CMD)
