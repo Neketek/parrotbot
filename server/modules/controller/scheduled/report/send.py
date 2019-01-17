@@ -8,7 +8,7 @@ from modules.model import sql
 import logging
 import json
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('server')
 
 
 def __get_or_create(t, k, d):

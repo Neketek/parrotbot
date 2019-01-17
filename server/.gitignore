@@ -1,8 +1,6 @@
 venv/
 **/__pycache__/
-/db.sqlite
+**/db.sqlite
 dev.env
 dev.Dockerfile
 plan.json
-msgs.json
-report_requests.json

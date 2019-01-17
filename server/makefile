@@ -3,7 +3,7 @@ all:
 
 .PHONY: rmdb
 rmdb:
-	rm db.sqlite -f
+	rm dbvolume/db.sqlite -f
 
 .PHONY: srun
 srun:

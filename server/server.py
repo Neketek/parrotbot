@@ -3,6 +3,7 @@ monkey.patch_all()
 
 
 def start():
+    import logging
     import time
     from slackclient import SlackClient
     from modules.config.env import config as envconf
@@ -10,16 +11,20 @@ def start():
     from modules.controller.scheduled.manager import Manager
     from modules.model import sql
     import threading
-    client = SlackClient(envconf.BOT_TOKEN)
+    logger = logging.getLogger('server')
+    logger.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
     sql.create_all()
+    client = SlackClient(envconf.BOT_TOKEN)
     if client.rtm_connect():
         Manager(client).start(threading.current_thread())
         while client.server.connected:
             messages = client.rtm_read()
-            actions.feed(client, messages, envconf.DEBUG)
+            actions.feed(client, messages)
             time.sleep(1)
+        else:
+            logger.error('Connection with Slack interrupted.')
     else:
-        print("Can't connect to Slack. BOT_TOKEN", envconf.BOT_TOKEN)
+        logger.error("Can't connect to Slack.")
 
 
 if __name__ == '__main__':

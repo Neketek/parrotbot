@@ -1,10 +1,8 @@
 from pprint import PrettyPrinter
-from collections import abc
 import requests
 from datetime import datetime
 import threading
 import logging
-from modules.config.env import config as envconf
 from . import exc
 
 
@@ -12,8 +10,7 @@ DEFAULT_BYE_MSG = "Interactive session is over. I waited too long."
 
 printer = PrettyPrinter(indent=4)
 
-logger = logging.getLogger(__name__.split('.')[-1].upper())
-logger.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
+logger = logging.getLogger('server')
 
 
 class Context(object):
@@ -461,7 +458,7 @@ class __Actions:
         self.threads.append(thread)
         thread.start()
 
-    def feed(self, client, messages, log=False):
+    def feed(self, client, messages):
         for m in messages:
             self.__create_msg_thread_worker(client, m)
         self.__try_to_remove_expired_channel_wait_cmd_msg()

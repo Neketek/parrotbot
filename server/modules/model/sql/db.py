@@ -5,7 +5,7 @@ from functools import wraps
 from modules.config.env import config as envconf
 
 
-engine = create_engine('sqlite:///db.sqlite', echo=envconf.DEBUG)
+engine = create_engine('sqlite:///dbvolume/db.sqlite', echo=envconf.DEBUG)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
