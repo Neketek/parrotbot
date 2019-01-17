@@ -95,6 +95,7 @@ class Context(object):
         code_block=False,
         **kwargs
     ):
+        logger.debug("SEND:C:{} MSG:{}".format(channel, text))
         if code_block:
             text = "```{}```".format(text)
         response = self.client.api_call(
@@ -452,8 +453,16 @@ class __Actions:
                 self.__process_message(client, msg)
             finally:
                 self.threads.remove(threading.current_thread())
+                logger.debug(
+                    'Thread stopped. Msg:{}. All:{}'
+                    .format(len(self.threads), threading.active_count())
+                )
         thread = threading.Thread(target=worker)
         self.threads.append(thread)
+        logger.debug(
+            'Thread started. Msg:{} All:{}'
+            .format(len(self.threads), threading.active_count())
+        )
         thread.start()
 
     def feed(self, client, messages):

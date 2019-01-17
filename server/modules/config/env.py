@@ -10,5 +10,9 @@ class __Config(object):
     def DEBUG(self):
         return os.environ.get('DEBUG', '').lower() == 'true'
 
+    @property
+    def DB_DEBUG(self):
+        return os.environ.get('DB_DEBUG', '').lower() == 'true'
+
 
 config = __Config()
