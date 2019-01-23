@@ -3,7 +3,7 @@ version: "3"
 services:
   server:
     container_name: parrotbot-server
-    image: parrotbot:lastest
+    image: parrotbot:latest
     build:
       dockerfile: Dockerfile
       context: ./server

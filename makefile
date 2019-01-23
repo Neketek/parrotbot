@@ -7,7 +7,7 @@ dcstop:
 
 .PHONY: dcbuild
 dcbuild:
-	docker-compose build
+	docker-compose build --force-rm
 
 .PHONY: dcdrun
 dcdrun: dcstop dcbuild
