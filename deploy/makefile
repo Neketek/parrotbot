@@ -8,3 +8,14 @@ build-ami:
 .PHONY: upload-project
 upload-project:
 	(cd project/upload; ./start.sh)
+
+.PHONY: start-bot
+start-bot:
+	(cd project/manage; ./manage.sh start-bot.sh)
+
+.PHONY: update-bot
+update-bot:
+	(cd project/manage; ./manage.sh update-bot.sh)
+
+.PHONY:
+	(cd project/manage; ./manage.sh stop-bot.sh)
