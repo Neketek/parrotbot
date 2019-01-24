@@ -1,3 +1,5 @@
+clear
+
 DEFAULT_KEY_DIR="/home/$USER/.ssh/parrotbot"
 DEFAULT_USER=ubuntu
 

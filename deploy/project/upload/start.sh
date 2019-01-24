@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-clear
 
 DEFAULT_BOT_ENV_FILE="$(realpath ../../../.env)"
 
