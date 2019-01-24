@@ -10,6 +10,8 @@ apk del python-dev build-base gcc
 
 COPY . /server/
 
+VOLUME /server/dbvolume
+VOLUME /server/log
 EXPOSE 80
 EXPOSE 443
 

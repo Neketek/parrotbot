@@ -3,7 +3,7 @@ import logging
 from logging import handlers
 
 root = logging.getLogger('server')
-root.setLevel(logging.DEBUG if envconf.DEBUG else logging.ERROR)
+root.setLevel(logging.DEBUG if envconf.DEBUG else logging.INFO)
 if envconf.LOG_TO_FILE:
     fmt = logging.Formatter(
         '%(asctime)s|%(message)s'

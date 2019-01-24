@@ -14,6 +14,9 @@ def start():
     sql.create_all()
     client = SlackClient(envconf.BOT_TOKEN)
     if client.rtm_connect():
+        logger.info(
+            'Established connection with Slack! Observing message queue...'
+        )
         Manager(client).start(threading.current_thread())
         while client.server.connected:
             messages = client.rtm_read()

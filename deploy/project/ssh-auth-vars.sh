@@ -4,13 +4,13 @@ DEFAULT_ID_FILE="$DEFAULT_KEY_FOLDER/key"
 DEFAULT_USER=ubuntu
 
 echo -ne "\nec2 ssh hostname or ip:"
-read HOST
-echo -e "\n$HOST"
+read SSH_HOST
+echo -e "\n$SSH_HOST"
 
 echo -ne "\nDEFAULT=$DEFAULT_USER\nec2 ssh user:"
-read USER
-USER=${USER:-"$DEFAULT_USER"}
-echo -e "\n$USER"
+read SSH_USER
+SSH_USER=${SSH_USER:-"$DEFAULT_USER"}
+echo -e "\n$SSH_USER"
 
 echo -ne "\nDEFAULT=$DEFAULT_ID_FILE\nec2 ssh key file":
 read ID_FILE

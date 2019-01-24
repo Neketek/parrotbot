@@ -20,3 +20,7 @@ update-bot:
 .PHONY: stop-bot
 stop-bot:
 	(cd project/manage; ./manage.sh stop-bot.sh)
+
+.PHONY: load-logs
+load-logs:
+	(cd project/manage; bash load-logs.sh)

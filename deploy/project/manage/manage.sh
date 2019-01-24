@@ -1,2 +1,2 @@
 source ../ssh-auth-vars.sh
-ssh -i $ID_FILE $USER@$HOST 'bash' < "$1"
+ssh -i $ID_FILE $SSH_USER@$SSH_HOST 'bash' < "$1"

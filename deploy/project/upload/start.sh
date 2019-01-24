@@ -21,7 +21,7 @@ clear
 
 echo 'Uploading...'
 
-scp -i $ID_FILE $GITHUB_DEPLOY_KEY_FILE $USER@$HOST:~/.ssh/id_rsa 1> /dev/null
+scp -i $ID_FILE $GITHUB_DEPLOY_KEY_FILE $SSH_USER@$SSH_HOST:~/.ssh/id_rsa 1> /dev/null
 if [ $? -eq 0 ]; then
   echo 'github deploy key copied successfully!'
 else
@@ -29,9 +29,9 @@ else
   kill $$
 fi
 
-ssh -i $ID_FILE $USER@$HOST 'bash' < ./scripts/pull-project.sh
+ssh -i $ID_FILE $SSH_USER@$SSH_HOST 'bash' < ./scripts/pull-project.sh
 
-scp -i $ID_FILE $BOT_ENV_CONF_FILE $USER@$HOST:~/parrotbot/.env 1> /dev/null
+scp -i $ID_FILE $BOT_ENV_CONF_FILE $SSH_USER@$SSH_HOST:~/parrotbot/.env 1> /dev/null
 if [ $? -eq 0 ]; then
   echo 'Bot .env copied successfully!'
 else
