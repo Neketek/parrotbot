@@ -19,7 +19,7 @@ echo -e "\n$BOT_ENV_CONF_FILE"
 clear
 
 
-echo 'Starting project upload process...'
+echo 'Uploading...'
 
 scp -i $ID_FILE $GITHUB_DEPLOY_KEY_FILE $USER@$HOST:~/.ssh/id_rsa 1> /dev/null
 if [ $? -eq 0 ]; then

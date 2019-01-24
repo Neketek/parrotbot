@@ -17,5 +17,6 @@ start-bot:
 update-bot:
 	(cd project/manage; ./manage.sh update-bot.sh)
 
-.PHONY:
+.PHONY: stop-bot
+stop-bot:
 	(cd project/manage; ./manage.sh stop-bot.sh)

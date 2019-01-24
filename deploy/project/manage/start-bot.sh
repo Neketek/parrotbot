@@ -1,1 +1,1 @@
-echo 'START BOT'
+cd ~/parrotbot && make dcdrun
