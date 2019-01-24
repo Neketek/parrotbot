@@ -1,16 +1,21 @@
 from modules.config.env import config as envconf
 import logging
+from logging import handlers
 
 root = logging.getLogger('server')
 root.setLevel(logging.DEBUG if envconf.DEBUG else logging.ERROR)
 if envconf.LOG_TO_FILE:
-    root.setHandler(
-        logging.handlers.TimedRotatingFileHandler(
-            "log",
-            when='D',
-            interval=1,
-            backupCount=7,
-            delay=True,
-            utc=True
-        )
+    fmt = logging.Formatter(
+        '%(asctime)s|%(message)s'
     )
+    handler = handlers.TimedRotatingFileHandler(
+        "log/log",
+        when='D',
+        interval=1,
+        backupCount=2,
+        delay=True,
+        utc=True
+    )
+    handler.setFormatter(fmt)
+    root.propagate = False
+    root.addHandler(handler)

@@ -2,7 +2,7 @@ version: "3"
 
 services:
   server:
-    container_name: parrotbot-server
+    container_name: parrotbot_server
     image: parrotbot:latest
     build:
       dockerfile: Dockerfile
@@ -14,5 +14,7 @@ services:
       - .env
     volumes:
       - parrotbotdb:/server/dbvolume
+      - ./server/log:/server/log
+
 volumes:
   parrotbotdb:

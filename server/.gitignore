@@ -4,3 +4,5 @@ venv/
 dev.env
 dev.Dockerfile
 plan.json
+log/log.*
+log/log
