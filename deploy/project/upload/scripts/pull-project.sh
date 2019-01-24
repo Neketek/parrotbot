@@ -10,7 +10,7 @@ fi
 
 mkdir $PROJECT_DIR 2> /dev/null
 cd $PROJECT_DIR
-
+make dcstop
 git init 2> /dev/null
 git remote add origin git@github.com:Neketek/parrotbot.git 2> /dev/null
 git pull origin master

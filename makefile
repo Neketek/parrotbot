@@ -3,7 +3,7 @@ all:
 
 .PHONY: dcstop
 dcstop:
-	docker-compose stop
+	docker-compose down
 
 .PHONY: dcbuild
 dcbuild:

@@ -1,1 +1,1 @@
-echo 'STOP BOT'
+cd ~/parrotbot && make dcstop
