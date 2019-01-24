@@ -6,6 +6,7 @@ DEFAULT_BOT_ENV_FILE="$(realpath ../../../.env)"
 echo 'Starting project uploding process. Pls, provide required vars...'
 source ../ssh-auth-vars.sh
 
+DEFAULT_DEPLOY_KEY_FILE="$KEY_DIR/deploy"
 echo -ne "\nDEFAULT=$DEFAULT_DEPLOY_KEY_FILE\ngithub deploy key:"
 read GITHUB_DEPLOY_KEY_FILE
 GITHUB_DEPLOY_KEY_FILE=${GITHUB_DEPLOY_KEY:-"$DEFAULT_DEPLOY_KEY_FILE"}
