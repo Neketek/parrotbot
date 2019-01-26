@@ -4,6 +4,7 @@ services:
   server:
     container_name: parrotbot_server
     image: parrotbot:latest
+    restart: on-failure
     build:
       dockerfile: Dockerfile
       context: ./server

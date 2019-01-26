@@ -24,3 +24,7 @@ stop-bot:
 .PHONY: load-logs
 load-logs:
 	(cd project/manage; bash load-logs.sh)
+
+.PHONY: ssh
+ssh:
+	(cd project/manage; bash ssh.sh)

@@ -40,6 +40,7 @@ class Questionnaire(Base):
             'title',
             'questions',
             'expiration',
+            'retention(days)',
             'schedule',
             'subs',
             'active'
@@ -55,8 +56,16 @@ class Questionnaire(Base):
             self.title,
             len(self.questions),
             exp,
+            self.retention,
             len(self.schedule),
-            len([s for s in self.subscriptions if s.active]),
+            len(
+                [
+                    s for s in self.subscriptions
+                    if s.active
+                    and s.subscriber.active
+                    and not s.subscriber.archived
+                ]
+            ),
             self.active
         ]
 
