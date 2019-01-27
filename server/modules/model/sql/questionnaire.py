@@ -109,6 +109,30 @@ class Schedule(Base):
         back_populates='schedule'
     )
 
+    @staticmethod
+    def create_pretty_table():
+        t = PrettyTable()
+        t.field_names = [
+            "start",
+            "end",
+            "time"
+        ]
+        return t
+
+    def to_pretty_table_row(self):
+        return [
+            self.start,
+            self.end,
+            self.time
+        ]
+
+    @staticmethod
+    def to_pretty_table(rows):
+        t = Schedule.create_pretty_table()
+        for r in rows:
+            t.add_row(r.to_pretty_table_row())
+        return t
+
 
 class Question(Base):
     __tablename__ = 'question'

@@ -67,6 +67,25 @@ class Context(object):
         self.file = self.files[0] if len(self.files) > 0 else None
         self.i = interactive
 
+    def upload_file(self, channel, content, filename, filetype):
+        # This operation is experimental due to slack api files.upload
+        # result payload problems. This api section is not optimized
+        # for bot usage therefore returns user id which is bot user id,
+        # but there is no easy way to find out that this is bot
+        # except comparing bot id with received user id
+        res = self.client.api_call(
+            "files.upload",
+            channels=[channel],
+            content=content,
+            filename=filename,
+            filetype=filetype
+        )
+        try:
+            error = res['error']
+            raise exc.SlackAPICallException(error)
+        except KeyError:
+            return res
+
     def load_file_request(self, slack_file=None):
         slack_file = self.file if slack_file is None else slack_file
         return requests.get(
@@ -104,10 +123,11 @@ class Context(object):
             text=text,
             **kwargs
         )
-        error = response.get('error')
-        if error is None:
+        try:
+            error = response['error']
+            raise exc.SlackAPICallException(error)
+        except KeyError:
             return response
-        raise exc.SlackAPICallException(error)
 
     @staticmethod
     def result():

@@ -9,7 +9,7 @@ if envconf.LOG_TO_FILE:
         '%(asctime)s|%(message)s'
     )
     handler = handlers.TimedRotatingFileHandler(
-        "log/log",
+        "files/log/log",
         when='D',
         interval=1,
         backupCount=2,

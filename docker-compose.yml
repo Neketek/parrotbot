@@ -14,8 +14,6 @@ services:
     env_file:
       - .env
     volumes:
-      - parrotbotdb:/server/dbvolume
-      - ./server/log:/server/log
-
-volumes:
-  parrotbotdb:
+      - ./server/files/plan:/server/files/plan
+      - ./server/files/log:/server/files/log
+      - ./server/files/db:/server/files/db

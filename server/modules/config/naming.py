@@ -15,7 +15,9 @@ short = cddict(
         question='questions',
         subscriber='sub',
         subscription='subscr',
-        report='report'
+        report='report',
+        schedule='sch',
+        plan='plan'
     ),
     method=cddict(
         list='ls',

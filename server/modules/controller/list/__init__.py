@@ -6,6 +6,8 @@ from modules.controller import permission
 from modules.controller.core import utils
 from .help_text import TEXT as HTEXT
 from . import reports
+from modules.controller.scheduled.report import plan as rplan
+import json
 
 
 NO_QUEEST_NAME = """
@@ -155,3 +157,64 @@ def subscription(c, session=None):
         sql.Subscription.to_pretty_table(subscr),
         code_block=True
     )
+
+
+__CMD[short.name.schedule] = (short.method.list, short.name.schedule, )
+CMD[short.name.schedule] = utils.cmd_str(*__CMD[short.name.schedule])
+
+
+@a.register(
+    c.command(
+        *__CMD[short.name.schedule],
+        cmd_str=CMD[short.name.schedule],
+        cmd_help=HTEXT[short.name.schedule]
+    )
+)
+@sql.session()
+@permission.admin()
+def schedule(c, session=None):
+    try:
+        name = c.cs_command_args[2]
+    except IndexError:
+        return c.reply_and_wait(NO_QUEEST_NAME)
+    try:
+        quest = (
+            session
+            .query(sql.Questionnaire)
+            .filter(sql.Questionnaire.name == name)
+            .one()
+        )
+    except orme.NoResultFound:
+        return c.reply_and_wait(NO_QUEST_WITH_NAME.format(name))
+    return c.reply_and_wait(
+        str(sql.Schedule.to_pretty_table(quest.schedule)),
+        code_block=True
+    )
+
+
+__CMD[short.name.plan] = (short.method.list, short.name.plan, )
+CMD[short.name.plan] = utils.cmd_str(*__CMD[short.name.plan])
+
+# Has a problem with file upload, bot 'thinks' that file upload event source
+# is other user because it contains bot user id
+# @a.register(
+#     c.command(
+#         *__CMD[short.name.plan],
+#         cmd_str=CMD[short.name.plan],
+#         cmd_help=HTEXT[short.name.plan]
+#     )
+# )
+# @sql.session()
+# @permission.admin()
+# def plan(c, session=None):
+#     try:
+#         data = rplan.load()
+#     except FileNotFoundError:
+#         plan.create()
+#         data = rplan.update(session)
+#     return c.upload_file(
+#         c.channel,
+#         json.dumps(data, indent=4),
+#         "plan.json",
+#         "json"
+#     )

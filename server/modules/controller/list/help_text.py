@@ -14,3 +14,9 @@ List subscriptions of the specified questionnaire.
 TEXT[short.name.subscriber] = """
 List all existing subscribers.
 """
+TEXT[short.name.schedule] = """
+List specified questionnaire schedule.
+"""
+TEXT[short.name.plan] = """
+Show bot report requests plan.
+"""

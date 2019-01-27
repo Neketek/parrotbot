@@ -3,7 +3,7 @@ from sqlalchemy import not_
 import json
 from .constant import TIME_FORMAT
 
-FILENAME = "plan.json"
+FILENAME = "files/plan/plan.json"
 
 
 def __get_or_create(s, k, d):
@@ -109,4 +109,4 @@ def load():
 
 def update(session):
     with open(FILENAME, 'w') as f:
-        f.write(json.dumps(get_plan(session), indent=4))
+        f.write(json.dumps(get_plan(session)))
