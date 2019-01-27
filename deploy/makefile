@@ -21,9 +21,17 @@ update-bot:
 stop-bot:
 	(cd project/manage; ./manage.sh stop-bot.sh)
 
-.PHONY: load-logs
-load-logs:
-	(cd project/manage; bash load-logs.sh)
+.PHONY: download-logs
+download-logs:
+	(cd project/manage; bash download-logs.sh)
+
+.PHONY: download-plan
+download-plan:
+	(cd project/manage; bash download-plan.sh)
+
+.PHONY: download-db
+download-db:
+	(cd project/manage; bash download-db.sh)
 
 .PHONY: ssh
 ssh:
