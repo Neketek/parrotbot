@@ -4,6 +4,7 @@ from .report import plan, send, cleanup
 from threading import Thread
 import time
 import os
+from modules.logger import root as logger
 
 
 class Manager(object):
@@ -64,15 +65,12 @@ class Manager(object):
 
     def tick(self):
         now = t.get_utcnow()
-        # now = t.get_utcnow().replace(
-        #     day=8,
-        #     hour=18,
-        #     minute=0
-        # )
         if self.is_next_minute(now):
+            logger.debug("Scheduled manager minute tick:{}".format(now))
             self.last_minute_call = now
             self.send_reports(now)
         elif self.is_next_hour(now):
+            logger.debug("Scheduled manager hour tick:{}".format(now))
             self.last_hour_call = now
             self.cleanup_reports(now)
 

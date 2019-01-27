@@ -9,7 +9,6 @@ import json
 from modules.logger import root as logger
 
 
-
 def __get_or_create(t, k, d):
     try:
         return t[k]
@@ -55,6 +54,9 @@ def __dump_to_file(fname, source):
 def send(c, session, plan, utcnow):
     execution_plan = plan['execution']
     quest_plan = plan['quest']
+    if not quest_plan:
+        logger.debug("Scheduled reports empty quest plan!")
+        return
     report_requests = dict()
     # building report requests
     # quest_id->creation_time->subscriptions->[(subscr.id, channel)]
@@ -80,6 +82,9 @@ def send(c, session, plan, utcnow):
     # empty dict evaluates as false, here is small optimization
     if not report_requests:
         return
+    logger.debug(
+        'Scheduled report request targets found! UTC:{}'.format(utcnow)
+    )
     # __dump_to_file("report_requests.json", report_requests)
     msgs = []
     reports = []
@@ -110,8 +115,10 @@ def send(c, session, plan, utcnow):
                 channels.append(channel)
             msgs.append((msg, channels,))
     # __dump_to_file("msgs.json", msgs)
+    logger.debug('Saving report request db records:{}'.format(len(reports)))
     session.bulk_save_objects(reports)
     session.commit()
+    logger.debug('Sending report request reminders...')
     for msg, channels in msgs:
         for ch in channels:
             try:
