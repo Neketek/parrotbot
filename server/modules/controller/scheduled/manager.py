@@ -41,6 +41,7 @@ class Manager(object):
 
         @sql.session()
         def worker(session=None):
+            logger.debug("Scheduled report thread started.")
             send.send(
                 Context(self.client),
                 session,

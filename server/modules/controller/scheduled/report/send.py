@@ -81,6 +81,9 @@ def send(c, session, plan, utcnow):
             quest_subscriptions += subscriptions
     # empty dict evaluates as false, here is small optimization
     if not report_requests:
+        logger.debug(
+            "Scheduled report request targets not found! UTC:{}".format(utcnow)
+        )
         return
     logger.debug(
         'Scheduled report request targets found! UTC:{}'.format(utcnow)
