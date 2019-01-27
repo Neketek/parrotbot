@@ -471,6 +471,8 @@ class __Actions:
         def worker():
             try:
                 self.__process_message(client, msg)
+            except Exception as e:
+                logger.error(str(e))
             finally:
                 self.threads.remove(threading.current_thread())
                 logger.debug(

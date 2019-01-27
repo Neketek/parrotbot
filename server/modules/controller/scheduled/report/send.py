@@ -105,7 +105,7 @@ def send(c, session, plan, utcnow):
                 expiration = get_relative_shifted_date_start(created, 1)
                 td = expiration - created
             else:
-                etime = datetime.time.strptime(expiration, TIME_FORMAT)
+                etime = datetime.strptime(expiration, TIME_FORMAT).time()
                 td = timedelta(hours=etime.hour, minutes=etime.minute)
                 expiration = created + td
             utc_expiration = utcnow + td

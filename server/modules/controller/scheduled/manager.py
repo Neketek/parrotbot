@@ -42,12 +42,15 @@ class Manager(object):
         @sql.session()
         def worker(session=None):
             logger.debug("Scheduled report thread started.")
-            send.send(
-                Context(self.client),
-                session,
-                self.report_plan,
-                now
-            )
+            try:
+                send.send(
+                    Context(self.client),
+                    session,
+                    self.report_plan,
+                    now
+                )
+            except Exception as e:
+                logger.error(str(e))
         thread = Thread(
             target=worker,
             name="scheduled.reports.send UTC:{}".format(now)
@@ -57,7 +60,10 @@ class Manager(object):
     def cleanup_reports(self, now):
         @sql.session()
         def worker(session=None):
-            cleanup.cleanup(session, now)
+            try:
+                cleanup.cleanup(session, now)
+            except Exception as e:
+                logger.error(str(e))
         thread = Thread(
             target=worker,
             name="scheduled.reports.cleanup UTC:{}".format(now)
@@ -77,9 +83,12 @@ class Manager(object):
 
     def start(self, main_thread):
         def worker():
-            while main_thread.is_alive():
-                self.tick()
-                time.sleep(1)
+            try:
+                while main_thread.is_alive():
+                    self.tick()
+                    time.sleep(1)
+            except Exception as e:
+                logger.error(str(e))
         thread = Thread(target=worker, name="scheduled.Manger")
         thread.start()
         return thread
