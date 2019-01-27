@@ -64,6 +64,11 @@ def send(c, session, plan, utcnow):
         tzdatetime = utcnow.astimezone(timezone(tz))
         tztime = tzdatetime.time().strftime("%H:%M")
         tztime = tzdays[tzdatetime.weekday()].get(tztime)
+        logger.debug("CHECKING TZ")
+        logger.debug(
+            "TZ:{} DT:{} WD:{}".format(tz, tzdatetime, tzdatetime.weekday())
+        )
+        logger.debug("TZ TIME FOUND?:{}".format(tztime is not None))
         if tztime is None:
             continue
         for qid in tztime:
