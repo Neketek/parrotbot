@@ -26,7 +26,7 @@ Security of the bot is the same as generic Slack user has, because bot uses **RT
 1. Create ec2 instance using previously built ami.
 1. Get ssh identity file(key) for previously created instance.
 1. Get ec2 public host or ip.
-1. Create keys directory. Default is **~/.ssh/parrot**
+1. Create keys directory. Default is **~/.ssh/parrotbot**
 1. Copy identity file to keys directory as **key**
 1. Copy Github deploy to keys directory as **deploy**
 1. In keys directory create single line file **host** and insert host name or ip of the ec2 instance to it.
