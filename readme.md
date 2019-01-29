@@ -1,20 +1,46 @@
 # README
+
 Parrotbot is simple lightweight self hosted solution for automatization of daily reports routine.
 
 ### Deployment guide(Linux)
 
-1. Go to **Slack** and obtain [BOT_TOKEN](https://api.slack.com/apps?new_app=1).  
-2. On the host install docker, docker-compose, make
-3. cd to project dir
-4. Create file `.env` according to `template.env` file. Replace **BOT_TOKEN** value placeholder with previously obtained token.
-5. Run `make dcdrun`. It will build&launch **parrotbot** server docker container in detached mode
-6. ???
-7. PROFIT!!!
+#### Important detail. Don't skip.
+This bot is for personal use only. It shouldn't be published in Slack App Repositories
+because it designed to be used privately for single workspace therefore it doesn't contain
+authorization system which can determine different workspace users therefore it will treat
+all registered users as members of the same workspace which will result in unauthorized
+access to private data.
+
+**I repeat. This bot is only for private single workspace use. Publishing it will lead to unauthorized access to private data.**
+
+Security of the bot is the same as generic Slack user has, because bot uses **RTM** which is technically UIless Slack client.
+
+#### Deployment
+1. Go to [Create Slack App page](https://api.slack.com/apps?new_app=1) and create app. Select your workspace as development workspace. Then under **OAuth & Permissions** of the newly created app find **Bot User OAuth Access Token**.
+1. Install packer, make
+1. CD to project root
+1. Create .env file and copy content of the template.env file. Replace BOT_TOKEN_PLACEHOLDER with previously obtained **Bot User OAuth Access Token**
+1. Get **Github** deploy key.
+1. CD to project root/deploy
+1. Run **make build-ami** this will build image for bot server instance.
+1. Create ec2 instance using previously built ami.
+1. Get ssh identity file(key) for previously created instance.
+1. Get ec2 public host or ip.
+1. Create keys directory. Default is **~/.ssh/parrot**
+1. Copy identity file to keys directory as **key**
+1. Copy Github deploy to keys directory as **deploy**
+1. In keys directory create single line file **host** and insert host name or ip of the ec2 instance to it.
+1. CD project root/deploy
+1. Run make upload-project. Follow instructions.
+1. Run make start-bot.
+1. Read project root/deploy/makefile to find additional functionality. Everything is pretty self-explanatory.
+1. ???
+1. PROFIT!!!
 
 ### Bot initialization guide:
 Bot uses its private channel as CLI, therefore all commands should be ran through it.
 1. Once bot is deployed you need to run one command to synchronize it with **Slack** workspace users. Run `update sub`. Bot will respond with available **subscribers(workspace users)** list which you can use in the next stage.
-2. Run `create quest`. You must be slack or bot_admin to use this command. To set subscriber as bot_admin run `set sub bot_admin true <sub_name>` This command is interactive. It will ask you to provide a file with new questionnaire data.
+1. Run `create quest`. You must be slack or bot_admin to use this command. To set subscriber as bot_admin run `set sub bot_admin true <sub_name>` This command is interactive. It will ask you to provide a file with new questionnaire data.
 ```json
   {
     "name":"daily",
@@ -44,7 +70,7 @@ Bot uses its private channel as CLI, therefore all commands should be ran throug
   * subscribers(required) - names(UIDs) of subscribers who should be subscribed to this questionnaire upon creation. Subscriber names can be viewed via `ls sub` command.
   * schedule(optional) - List of weekday intervals with time of report request.  Note weekday intervals can't intersect therefore bot can't request specific questionnaire reports more than once per day. If schedules was empty or undefined questionnaire will not request reports automatically, only manually using `create report` command.
   If creation was successful bot will send request reports from the subscribers according to the schedule. You can add as many questionnaires as you want.
-3. Questionnaire parameters can be updated by `update quest` command. It will ask to provide update file.
+1. Questionnaire parameters can be updated by `update quest` command. It will ask to provide update file.
   Questionnaire update file can contain same fields as create file, except questions field, because changing questions is equal to questionnaire recreation, therefore you should run `delete quest <quest_name>` and `create quest` to create new questionnaire. Note that existing reports will be deleted. Name field defines which questionnaire should be updated by this file.
 ```json
 {
@@ -77,5 +103,5 @@ Bot uses its private channel as CLI, therefore all commands should be ran throug
   * `ls subscr <quest_name>` list subscriptions of specified questionnaire
   * `ls question <quest_name>` list questions of specified questionnaire.
   * `ls quest` list all questionnaires.
-2. Non admin users commands:
-  * `update report` provide answers in interactive mode for all pending questionnaires. Answer messages can be edited if report did not expire yet. Edit works through native Slack message edit functionality. 
+1. Non admin users commands:
+  * `update report` provide answers in interactive mode for all pending questionnaires. Answer messages can be edited if report did not expire yet. Edit works through native Slack message edit functionality.

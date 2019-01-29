@@ -36,6 +36,7 @@ def start():
                     )
                     time.sleep(servconf.RECONNECTION_TIME_INTERVAL)
                     if client.rtm_connect():
+                        logger.info("Connection restored!")
                         break
                 else:
                     break
