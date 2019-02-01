@@ -36,3 +36,7 @@ download-db:
 .PHONY: ssh
 ssh:
 	(cd project/manage; bash ssh.sh)
+
+.PHONY: rm-logs
+rm-logs:
+	(cd project/manage; ./manage.sh rm-logs.sh)
