@@ -1,5 +1,5 @@
 from modules.model import sql
-from sqlalchemy import func, and_
+from sqlalchemy import func
 from modules.logger import root as logger
 
 
@@ -10,10 +10,10 @@ def cleanup(session, utc_now):
         .join(sql.Subscription)
         .join(sql.Questionnaire)
         .filter(
-            func.date(
+            func.datetime(
                 sql.Report.utc_expiration,
                 func.printf(
-                    "+{} day",
+                    "+%i day",
                     sql.Questionnaire.retention
                 )
             ) < utc_now
@@ -44,7 +44,7 @@ def cleanup(session, utc_now):
         )
         .delete(synchronize_session=False)
     )
+    session.commit()
     logger.info('Cleanup time:{}'.format(utc_now))
     logger.info('Reports cleanup. Deleted {} reports'.format(deleted_reports))
     logger.info('{} archived users deleted'.format(deleted_archived_subs))
-    session.commit()
