@@ -44,6 +44,7 @@ def cleanup(session, utc_now):
         )
         .delete(synchronize_session=False)
     )
+    logger.info('Cleanup time:{}'.format(utc_now))
     logger.info('Reports cleanup. Deleted {} reports'.format(deleted_reports))
     logger.info('{} archived users deleted'.format(deleted_archived_subs))
     session.commit()
